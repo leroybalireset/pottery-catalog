@@ -109,8 +109,11 @@ header a:hover { color: #fff; }
 
 /* Grid */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
-.card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07); transition: box-shadow 0.15s; }
+.card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07); transition: box-shadow 0.15s; cursor: pointer; position: relative; }
 .card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.12); }
+.card.selected { box-shadow: 0 0 0 3px #6b4c3b; }
+.card.selected .card-check { opacity: 1; }
+.card-check { position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; background: #6b4c3b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; opacity: 0; transition: opacity 0.15s; z-index: 2; }
 .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
 .card-body { padding: 10px 12px; }
 .card-cat { font-size: 0.7rem; color: #6b4c3b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
@@ -121,6 +124,28 @@ header a:hover { color: #fff; }
 .btn-edit:hover { background: #e0d8d0; }
 .btn-del { padding: 4px 10px; background: #fdecea; color: #c62828; border: none; border-radius: 5px; cursor: pointer; font-size: 0.78rem; }
 .btn-del:hover { background: #ffcdd2; }
+
+/* Bulk action bar */
+.bulk-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; background: #2a2a2a; color: #fff;
+  padding: 14px 24px; display: none; align-items: center; gap: 12px; z-index: 90;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.3);
+}
+.bulk-bar.visible { display: flex; }
+.bulk-bar .count { font-size: 0.9rem; font-weight: 600; margin-right: 4px; }
+.bulk-bar .label { font-size: 0.82rem; color: #aaa; margin-right: 12px; }
+.bulk-bar .divider { width: 1px; height: 28px; background: #555; margin: 0 4px; }
+.btn-bulk { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+.btn-bulk-pottery { background: #8B6349; color: #fff; }
+.btn-bulk-pottery:hover { background: #7a5240; }
+.btn-bulk-lighting { background: #c89b3c; color: #fff; }
+.btn-bulk-lighting:hover { background: #b08830; }
+.btn-bulk-statues { background: #5a7a6b; color: #fff; }
+.btn-bulk-statues:hover { background: #4a6a5b; }
+.btn-bulk-delete { background: #c62828; color: #fff; margin-left: auto; }
+.btn-bulk-delete:hover { background: #b71c1c; }
+.btn-bulk-cancel { background: #555; color: #fff; }
+.btn-bulk-cancel:hover { background: #666; }
 
 .empty { text-align: center; color: #bbb; padding: 60px 0; font-size: 1rem; }
 
@@ -236,6 +261,7 @@ header a:hover { color: #fff; }
       <button class="filter-btn" onclick="setFilter('Pottery',this)">Pottery</button>
       <button class="filter-btn" onclick="setFilter('Lighting',this)">Lighting</button>
       <button class="filter-btn" onclick="setFilter('Statues',this)">Statues</button>
+      <button class="filter-btn" id="btnSelectAll" onclick="toggleSelectAll()" style="margin-left:8px">Select All</button>
       <input class="search-box" type="search" placeholder="Search..." oninput="setSearch(this.value)">
     </div>
 
@@ -243,6 +269,7 @@ header a:hover { color: #fff; }
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" style="display:none">No items yet. Upload photos in Manual or Bulk mode.</div>
   </div>
+
 
 </div>
 
@@ -264,6 +291,18 @@ header a:hover { color: #fff; }
   </div>
 </div>
 
+<!-- Bulk Action Bar -->
+<div class="bulk-bar" id="bulkBar">
+  <span class="count" id="bulkCount">0</span>
+  <span class="label">selected — move to:</span>
+  <button class="btn-bulk btn-bulk-pottery" onclick="bulkSetCategory('Pottery')">🏺 Pottery</button>
+  <button class="btn-bulk btn-bulk-lighting" onclick="bulkSetCategory('Lighting')">💡 Lighting</button>
+  <button class="btn-bulk btn-bulk-statues" onclick="bulkSetCategory('Statues')">🗿 Statues</button>
+  <div class="divider"></div>
+  <button class="btn-bulk btn-bulk-delete" onclick="bulkDelete()">🗑 Delete Selected</button>
+  <button class="btn-bulk btn-bulk-cancel" onclick="clearSelection()">✕ Cancel</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -275,6 +314,7 @@ let editingId = null;
 let manualCategory = 'Pottery';
 let bulkQueue = []; // {file, status, rowEl, thumbEl}
 let bulkRunning = false;
+let selectedIds = new Set();
 
 // ===== MODE SWITCHING =====
 function switchMode(mode) {
@@ -318,18 +358,96 @@ function renderGrid() {
   if (!items.length) { grid.innerHTML=''; empty.style.display=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = items.map(item => `
-    <div class="card" id="card-${item.id}">
-      <img src="/${item.image}?v=${Date.now()}" alt="No.${item.itemNum}" loading="lazy">
+    <div class="card${selectedIds.has(item.id)?' selected':''}" id="card-${item.id}" onclick="toggleSelect(event,'${item.id}')">
+      <div class="card-check">✓</div>
+      <img src="/${item.image}" alt="No.${item.itemNum}" loading="lazy">
       <div class="card-body">
         <div class="card-cat">${item.category}</div>
         <div class="card-num">No. ${item.itemNum}</div>
         <div class="card-desc">${item.description||'—'}</div>
         <div class="card-actions">
-          <button class="btn-edit" onclick="openEdit('${item.id}')">Edit</button>
-          <button class="btn-del" onclick="deleteItem('${item.id}')">Delete</button>
+          <button class="btn-edit" onclick="openEdit('${item.id}');event.stopPropagation()">Edit</button>
+          <button class="btn-del" onclick="deleteItem('${item.id}');event.stopPropagation()">Delete</button>
         </div>
       </div>
     </div>`).join('');
+}
+
+function toggleSelect(e, id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  const card = document.getElementById('card-' + id);
+  card.classList.toggle('selected', selectedIds.has(id));
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  document.getElementById('bulkCount').textContent = selectedIds.size;
+  bar.classList.toggle('visible', selectedIds.size > 0);
+  // add bottom padding so last grid row isn't hidden behind bar
+  document.getElementById('grid').style.paddingBottom = selectedIds.size > 0 ? '80px' : '';
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+  updateBulkBar();
+}
+
+function toggleSelectAll() {
+  const visible = (catalog.items||[]).filter(i => {
+    if (activeFilter !== 'All' && i.category !== activeFilter) return false;
+    if (searchQuery && !i.description.toLowerCase().includes(searchQuery) && !String(i.itemNum).includes(searchQuery)) return false;
+    return true;
+  });
+  const allSelected = visible.every(i => selectedIds.has(i.id));
+  if (allSelected) {
+    visible.forEach(i => selectedIds.delete(i.id));
+  } else {
+    visible.forEach(i => selectedIds.add(i.id));
+  }
+  renderGrid();
+  updateBulkBar();
+}
+
+async function bulkSetCategory(category) {
+  if (!selectedIds.size) return;
+  const ids = [...selectedIds];
+  let done = 0;
+  for (const id of ids) {
+    try {
+      const res = await fetch(`${API}/item/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({category}) });
+      const data = await res.json();
+      if (data.success) {
+        const idx = catalog.items.findIndex(i=>i.id===id);
+        if (idx!==-1) catalog.items[idx]=data.item;
+        done++;
+      }
+    } catch(e) {}
+  }
+  clearSelection();
+  renderGrid();
+  renderStats();
+  showToast(`${done} item${done!==1?'s':''} moved to ${category}`);
+}
+
+async function bulkDelete() {
+  if (!selectedIds.size) return;
+  if (!confirm(`Delete ${selectedIds.size} selected item${selectedIds.size!==1?'s':''}? This cannot be undone.`)) return;
+  const ids = [...selectedIds];
+  let done = 0;
+  for (const id of ids) {
+    try {
+      const res = await fetch(`${API}/item/${id}`, { method:'DELETE' });
+      const data = await res.json();
+      if (data.success) { catalog.items = catalog.items.filter(i=>i.id!==id); done++; }
+    } catch(e) {}
+  }
+  clearSelection();
+  renderGrid();
+  renderStats();
+  showToast(`${done} item${done!==1?'s':''} deleted`);
 }
 
 function setFilter(cat, btn) {
