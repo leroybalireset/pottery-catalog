@@ -815,6 +815,7 @@
         const STORAGE_KEY = 'sewhouse_interest_v1';
         let interestList = loadInterestList();
         let sectionPages = {};
+        const SECTION_SIZE = data.itemsPerPage || 12;
 
         // ===== DOM =====
         const catalogEl = document.getElementById('catalog');
