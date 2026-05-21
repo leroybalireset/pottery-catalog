@@ -72,8 +72,11 @@ rsync -avz --delete \
     "$LOCAL_DIR/catalog.html" \
     "$LOCAL_DIR/catalog-data.js" \
     "$LOCAL_DIR/SewHouseLA_Logo.png" \
-    "$LOCAL_DIR/images/" \
     "$VPS_USER@$VPS_HOST:$REMOTE_DIR/"
+
+rsync -avz --delete \
+    "$LOCAL_DIR/images/" \
+    "$VPS_USER@$VPS_HOST:$REMOTE_DIR/images/"
 
 # Restore nginx ownership
 echo ""
