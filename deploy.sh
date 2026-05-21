@@ -63,10 +63,10 @@ if ! ssh "$VPS_USER@$VPS_HOST" "[ -d $REMOTE_DIR ]" 2>/dev/null; then
     exit 1
 fi
 
-# Rsync the files
+# Rsync the files (temporarily give aaron ownership so rsync can write)
 echo ""
 echo "Deploying files to $VPS_HOST:$REMOTE_DIR ..."
-echo ""
+ssh "$VPS_USER@$VPS_HOST" "sudo chown -R $VPS_USER:$VPS_USER $REMOTE_DIR"
 
 rsync -avz --delete \
     "$LOCAL_DIR/catalog.html" \
@@ -75,7 +75,7 @@ rsync -avz --delete \
     "$LOCAL_DIR/images/" \
     "$VPS_USER@$VPS_HOST:$REMOTE_DIR/"
 
-# Set ownership (nginx runs as www-data typically)
+# Restore nginx ownership
 echo ""
 echo "Setting file permissions..."
 ssh "$VPS_USER@$VPS_HOST" "sudo chown -R www-data:www-data $REMOTE_DIR && sudo chmod -R 755 $REMOTE_DIR"
