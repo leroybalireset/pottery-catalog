@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+categorized.json
+
+# Raw/working images (large, not tracked in git)
+raw/
+audited/
+
+# Local dev
+*.log

@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sew House LA — Pottery &amp; Lighting Catalog</title>
+    <script src="catalog-data.js"></script>
+    <script>
+        if (typeof CATALOG_DATA === 'undefined') {
+            try {
+                const preview = localStorage.getItem('sewhouse_catalog_preview');
+                if (preview) window.CATALOG_DATA = JSON.parse(preview);
+            } catch (e) {}
+        }
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #c4a882;
+            --accent-light: #d4b892;
+            --text: #2c2c2c;
+            --text-muted: #7a7a7a;
+            --bg-cream: #f7f5f2;
+            --border: #e0dcd6;
+            --selected: #5a4a3a;
+            --danger: #c44;
+        }
+
+        @page { size: letter; margin: 0.6in 0.7in; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: var(--text);
+            background: #e8e5e0;
+            line-height: 1.4;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* ===== DEMO BANNER ===== */
+        .demo-banner {
+            background: #faf8f5;
+            border-bottom: 1.5px solid var(--accent);
+            padding: 12px 20px;
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .demo-banner a {
+            color: var(--selected);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .demo-banner a:hover { text-decoration: underline; }
+
+        /* ===== HERO HEADER ===== */
+        .hero-header {
+            text-align: center;
+            padding: 48px 32px 32px;
+            background: #fff;
+            border-bottom: 1.5px solid var(--accent);
+        }
+        .hero-header .logo {
+            height: 52px;
+            width: auto;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+        .hero-header h1 {
+            font-family: 'Georgia', 'Garamond', serif;
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+            margin-bottom: 8px;
+        }
+        .hero-header .contact {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .hero-header .contact span { margin: 0 12px; }
+        .hero-header .tagline {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== STICKY SECTION NAV ===== */
+        .section-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fff;
+            border-bottom: 1.5px solid var(--accent);
+            padding: 10px 20px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .section-nav a {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+        .section-nav a:hover {
+            border-color: var(--accent);
+            color: var(--selected);
+        }
+        .section-nav a.active {
+            background: var(--selected);
+            color: #fff;
+            border-color: var(--selected);
+        }
+        .section-nav .nav-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .section-nav button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+        }
+        .section-nav button:hover { background: var(--accent-light); }
+        .section-nav button.secondary { background: #555; }
+        .section-nav button.secondary:hover { background: #777; }
+        .section-nav input[type="text"] {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* ===== CATALOG SECTIONS ===== */
+        .catalog-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .cat-section {
+            background: #fff;
+            border-radius: 8px;
+            margin-top: 30px;
+            padding: 28px 32px 36px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .cat-section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cat-section-header h2 {
+            font-family: 'Georgia', serif;
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+        }
+        .cat-section-header .count {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .section-pager {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .section-pager button {
+            padding: 5px 14px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+        .section-pager button:hover { background: var(--accent-light); }
+        .section-pager button:disabled {
+            background: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .section-pager .page-info {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 80px;
+            text-align: center;
+        }
+        .section-pager .page-numbers {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .section-pager .page-numbers a {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .section-pager .page-numbers a:hover { border-color: var(--accent); color: var(--selected); }
+        .section-pager .page-numbers a.active {
+            background: var(--selected);
+            color: #fff;
+            border-color: var(--selected);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px 18px;
+        }
+
+        .item-block {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .item-block:hover { transform: translateY(-3px); }
+
+        .item-block.selected .item-image-wrapper {
+            border-color: var(--selected);
+            box-shadow: 0 0 0 3px rgba(90,74,58,0.25);
+        }
+        .item-block.selected .item-number { color: var(--selected); font-weight: 700; }
+        .item-block.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            background: var(--selected);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 13px;
+            line-height: 24px;
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            pointer-events: none;
+        }
+
+        .item-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--bg-cream);
+            border: 2px solid transparent;
+            outline: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .item-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .item-number {
+            margin-top: 8px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #5a4a3a;
+        }
+        .item-hint {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9px;
+            color: #bbb;
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .item-block:hover .item-hint { opacity: 1; }
+
+        .item-block.highlight-search {
+            animation: pulseHighlight 1.5s ease;
+        }
+        @keyframes pulseHighlight {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(196,168,130,0.5); }
+            100% { transform: scale(1); }
+        }
+
+        .page-footer {
+            text-align: center;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #aaa;
+            padding: 20px 0 30px;
+        }
+
+        /* ===== NO DATA ===== */
+        .no-data {
+            text-align: center;
+            padding: 80px 20px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-muted);
+        }
+        .no-data h2 { font-family: 'Georgia', serif; font-size: 22px; margin-bottom: 12px; color: var(--text); }
+        .no-data code { background: #eee; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+
+        /* ===== PRICE MODAL ===== */
+        .price-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 1998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .price-modal-backdrop.show { opacity: 1; pointer-events: auto; }
+
+        .price-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.96);
+            width: 90vw;
+            max-width: 720px;
+            max-height: 85vh;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            z-index: 1999;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .price-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+
+        .price-modal-header {
+            padding: 20px 24px 14px;
+            border-bottom: 1.5px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .price-modal-header h2 {
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+        }
+        .price-modal-close {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 30px;
+            text-align: center;
+        }
+        .price-modal-close:hover { border-color: var(--danger); color: var(--danger); }
+
+        .price-modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+        .price-sheet-title {
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1.5px solid var(--accent);
+        }
+
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        .price-table thead th {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1.5px solid var(--accent);
+        }
+        .price-table thead th:last-child { text-align: right; }
+        .price-table tbody tr { border-bottom: 1px solid #ece8e2; }
+        .price-table tbody tr:hover { background: #faf8f5; }
+        .price-table tbody td { padding: 10px 14px; font-size: 13px; color: #3a3a3a; }
+        .price-table tbody td:last-child { text-align: right; font-weight: 600; color: #5a4a3a; letter-spacing: 0.5px; }
+
+        .price-note {
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: #faf8f5;
+            border-left: 3px solid var(--accent);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .price-modal-footer {
+            padding: 14px 24px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            background: #faf8f5;
+            border-radius: 0 0 8px 8px;
+        }
+        .price-modal-footer button {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        .price-modal-footer .btn-print { background: var(--accent); color: #fff; }
+        .price-modal-footer .btn-print:hover { background: var(--accent-light); }
+        .price-modal-footer .btn-email { background: #555; color: #fff; }
+        .price-modal-footer .btn-email:hover { background: #777; }
+
+        /* ===== INTEREST DRAWER ===== */
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.2);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .drawer-backdrop.show { opacity: 1; pointer-events: auto; }
+
+        .interest-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 340px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .interest-drawer.open { transform: translateX(0); }
+
+        .drawer-header {
+            padding: 22px 24px 18px;
+            border-bottom: 1.5px solid var(--accent);
+            background: #faf8f5;
+        }
+        .drawer-header h2 {
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+        }
+        .drawer-header p {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .drawer-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            font-size: 16px;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 28px;
+            text-align: center;
+        }
+
+        .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .interest-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+        }
+        .interest-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0ede8;
+        }
+        .interest-item img {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .interest-item-info { flex: 1; min-width: 0; }
+        .interest-item-info .num {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--selected);
+            letter-spacing: 1px;
+        }
+        .interest-item-info .desc {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .interest-item .unselect {
+            width: 22px;
+            height: 22px;
+            background: none;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            color: #999;
+            font-size: 14px;
+            line-height: 20px;
+            text-align: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .interest-item .unselect:hover { border-color: #c44; color: #c44; }
+
+        .drawer-footer {
+            padding: 18px 20px 22px;
+            border-top: 1px solid var(--border);
+            background: #faf8f5;
+        }
+        .drawer-footer .client-field {
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            background: #fff;
+        }
+        .drawer-footer .client-field::placeholder { color: #bbb; font-size: 12px; }
+        .drawer-footer textarea.client-field { resize: vertical; min-height: 60px; }
+
+        .drawer-actions { display: flex; gap: 8px; }
+        .drawer-actions button {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        .btn-print { background: var(--accent); color: #fff; }
+        .btn-print:hover { background: var(--accent-light); }
+        .btn-email { background: #555; color: #fff; }
+        .btn-email:hover { background: #777; }
+        .btn-clear { background: #fff; color: #999; border: 1px solid #ddd !important; }
+        .btn-clear:hover { color: #c44; border-color: #c44 !important; }
+
+        .interest-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1500;
+            background: var(--selected);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 22px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(90,74,58,0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
+        }
+        .interest-badge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(90,74,58,0.45); }
+        .interest-badge.visible { display: block; }
+        .interest-badge .count {
+            display: inline-block;
+            background: #fff;
+            color: var(--selected);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body { background: #fff; }
+            .section-nav, .interest-badge, .interest-drawer, .drawer-backdrop,
+            .price-modal-backdrop, .price-modal-header, .price-modal-footer,
+            .demo-banner { display: none !important; }
+            .catalog-container { padding: 0; max-width: 100%; }
+            .cat-section { box-shadow: none; margin-bottom: 0; page-break-after: always; break-after: page; border-radius: 0; }
+            .cat-section:last-child { page-break-after: auto; break-after: auto; }
+            .item-block:hover { transform: none; }
+            .item-block { cursor: default; }
+            .item-hint { display: none; }
+            .item-block.selected::after { display: none; }
+            .item-block.selected .item-image-wrapper {
+                border-color: transparent;
+                box-shadow: none;
+                outline: 1px solid var(--border);
+            }
+            .hero-header { padding: 20px 32px; }
+            .price-modal {
+                position: static;
+                transform: none;
+                width: 100%;
+                max-width: none;
+                max-height: none;
+                box-shadow: none;
+                opacity: 1;
+                pointer-events: auto;
+                display: flex;
+                page-break-after: always;
+            }
+            .price-modal-body { overflow: visible; padding: 0 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="catalog-container" id="catalog">
+        <div id="catalog-loading" style="padding:40px;text-align:center;color:#888;">Loading catalog...</div>
+    </div>
+
+    <div class="price-modal-backdrop" id="priceModalBackdrop" onclick="closePriceModal()"></div>
+    <div class="price-modal" id="priceModal">
+        <div class="price-modal-header">
+            <h2 id="priceModalTitle">Price Sheet</h2>
+            <button class="price-modal-close" onclick="closePriceModal()">&times;</button>
+        </div>
+        <div class="price-modal-body" id="priceModalBody"></div>
+        <div class="price-modal-footer">
+            <button class="btn-print" onclick="printPriceSheet()">Print</button>
+            <button class="btn-email" onclick="emailPriceRequest()">Email Request</button>
+        </div>
+    </div>
+
+    <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+    <div class="interest-drawer" id="interestDrawer">
+        <div class="drawer-header">
+            <h2>My List</h2>
+            <p>Click items in the catalog to add them here</p>
+            <button class="drawer-close" onclick="toggleDrawer(false)">&times;</button>
+        </div>
+        <div class="drawer-body" id="drawerBody">
+            <div class="interest-empty">No items selected yet.<br>Tap any pot to add it.</div>
+        </div>
+        <div class="drawer-footer">
+            <input type="text" class="client-field" id="clientName" placeholder="Your Name">
+            <input type="email" class="client-field" id="clientEmail" placeholder="Your Email">
+            <textarea class="client-field" id="clientNote" placeholder="Questions or notes..."></textarea>
+            <div class="drawer-actions">
+                <button class="btn-print" onclick="printInterestList()">Print List</button>
+                <button class="btn-email" onclick="emailInterestList()">Request Pricing</button>
+                <button class="btn-clear" onclick="clearInterestList()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="interest-badge" id="interestBadge" onclick="toggleDrawer(true)">
+        My List <span class="count" id="badgeCount">0</span>
+    </button>
+
+    <script>
+        // ===== DEMO DATA =====
+        const DEMO_DATA = {
+            header: { title: 'Sew House', phone: '213-308-0288', email: 'bridie@sewhousela.com', logo: 'SewHouseLA_Logo.png' },
+            itemsPerPage: 12,
+            showPrices: true,
+            items: [
+                { id:'p1', itemNum:1042, description:'Hand-thrown stoneware pot', price:45, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjZDRhODgyIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4gMTA0MjwvdGV4dD48L3N2Zz4=' },
+                { id:'p2', itemNum:2156, description:'Glazed ceramic vessel', price:55, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYjg5NDZhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4gMjE1NjwvdGV4dD48L3N2Zz4=' },
+                { id:'p3', itemNum:3289, description:'Terra-cotta garden pot', price:65, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYzQ3ODVhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4gMzI4OTwvdGV4dD48L3N2Zz4=' },
+                { id:'p4', itemNum:4317, description:'Porcelain urn', price:85, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjZThkZGQwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4gNDMxNzwvdGV4dD48L3N2Zz4=' },
+                { id:'p5', itemNum:5481, description:'Speckled clay pot', price:75, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYTg5MDgwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby41NDgxPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p6', itemNum:6523, description:'Raku-fired vessel', price:50, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjNmE1YTRhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby42NTIzPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p7', itemNum:7684, description:'Celadon cache pot', price:120, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjOGJhODk4IiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby43Njg0PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p8', itemNum:8791, description:'Salt-glazed pot', price:68, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYzRiOGE4IiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby44NzkxPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p9', itemNum:9812, description:'Wood-fired pot', price:95, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjN2E2YTVhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby45ODEyPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p10', itemNum:1093, description:'Olive oil vessel', price:38, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYTA3MDUwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4xMDkzPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p11', itemNum:2147, description:'Bud pot trio', price:42, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjZDBjNGI4IiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4yMTQ3PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'p12', itemNum:3265, description:'Incised clay pot', price:78, category:'Pottery', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjOWE4YTdhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4zMjY1PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l1', itemNum:7632, description:'Ceramic table lamp', price:185, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYzhiMDkwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby43NjMyPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l2', itemNum:8745, description:'Pendant light shade', price:145, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjZTBkMGI4IiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby44NzQ1PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l3', itemNum:9856, description:'Wall sconce', price:110, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYjhhODkwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby45ODU2PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l4', itemNum:1067, description:'Tealight holder set', price:35, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjZDhjOGIwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4xMDY3PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l5', itemNum:2178, description:'Floor lamp base', price:220, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYTg5ODgwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4yMTc4PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'l6', itemNum:3289, description:'Chandelier accent', price:175, category:'Lighting', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYzhiOGEwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby4zMjg5PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'st1', itemNum:4123, description:'Abstract ceramic figure', price:195, category:'Statues', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjOGE3YTZhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby40MTIzPC90ZXh0Pjwvc3ZnPg==' },
+                { id:'st2', itemNum:5234, description:'Totem sculpture', price:240, category:'Statues', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjNmE1YTUwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby41MjM0PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'st3', itemNum:6345, description:'Reclining form', price:180, category:'Statues', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYThhODgwIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby42MzQ1PC90ZXh0Pjwvc3ZnPg==' },
+                { id:'st4', itemNum:7456, description:'Organic vessel sculpture', price:210, category:'Statues', image:'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjgwMCIgZmlsbD0iI2Y3ZjVmMiIvPjxjaXJjbGUgY3g9IjQwMCIgY3k9IjMyMCIgcj0iMTgwIiBmaWxsPSIjYzg5YjdhIiBvcGFjaXR5PSIwLjMiLz48dGV4dCB4PSI0MDAiIHk9Ijc0MCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSxBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0icmdiYSg5MCw3NCw1OCwwLjYpIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Oby43NDU2PC90ZXh0Pjwvc3ZnPg==' }
+            ]
+        };
+
+        // ===== LOAD DATA =====
+        let usingDemo = false;
+        let data = (typeof CATALOG_DATA !== 'undefined') ? CATALOG_DATA : null;
+        if (!data || !data.items || !data.items.length) {
+            data = DEMO_DATA;
+            usingDemo = true;
+        }
+
+        const STORAGE_KEY = 'sewhouse_interest_v1';
+        let interestList = loadInterestList();
+
+        // ===== DOM =====
+        const catalogEl = document.getElementById('catalog');
+        const priceModal = document.getElementById('priceModal');
+        const priceModalBackdrop = document.getElementById('priceModalBackdrop');
+        const priceModalBody = document.getElementById('priceModalBody');
+        const priceModalTitle = document.getElementById('priceModalTitle');
+        const interestDrawer = document.getElementById('interestDrawer');
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+        const drawerBody = document.getElementById('drawerBody');
+        const interestBadge = document.getElementById('interestBadge');
+        const badgeCount = document.getElementById('badgeCount');
+
+        // ===== INIT =====
+        function init() {
+            try {
+                if (usingDemo) showDemoBanner();
+                console.log('Catalog init. Items:', data.items ? data.items.length : 0);
+                renderCatalog();
+                renderPriceSheet();
+                renderInterestDrawer();
+            } catch (e) {
+                console.error('Init error:', e);
+                catalogEl.innerHTML = '<div style="padding:40px;color:#c44;font-size:16px;"><strong>Error loading catalog:</strong><br>' + e.message + '<br><br>Check console for details.</div>';
+            }
+        }
+
+        function showDemoBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'demo-banner';
+            banner.innerHTML = `
+                <strong>SAMPLE CATALOG</strong> — Preview with pottery &amp; lighting items.
+                <a href="admin.html">Open Admin</a> to upload real photos.
+            `;
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
+
+        // ===== RENDER CATALOG =====
+        function groupByCategory(items) {
+            const groups = {};
+            items.forEach(item => {
+                const cat = item.category || 'Uncategorized';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(item);
+            });
+            return groups;
+        }
+
+        function slug(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        }
+
+        function highlightNav(link) {
+            document.querySelectorAll('.section-nav a').forEach(a => a.classList.remove('active'));
+            link.classList.add('active');
+        }
+
+        function sectionTotalPages(items) {
+            return Math.max(1, Math.ceil(items.length / SECTION_SIZE));
+        }
+
+        function renderSectionGrid(grid, items, page) {
+            grid.innerHTML = '';
+            const start = page * SECTION_SIZE;
+            const pageItems = items.slice(start, start + SECTION_SIZE);
+            pageItems.forEach(item => {
+                const isSelected = interestList.some(l => l.itemNum === item.itemNum);
+                const block = document.createElement('div');
+                block.className = 'item-block' + (isSelected ? ' selected' : '');
+                block.dataset.id = item.id;
+                block.innerHTML = `
+                    <div class="item-image-wrapper">
+                        <img src="${item.image}" alt="Item ${item.itemNum}">
+                    </div>
+                    <div class="item-number">No. ${item.itemNum}</div>
+                    <div class="item-hint">${isSelected ? 'Click to remove' : 'Click to add'}</div>
+                `;
+                block.addEventListener('click', () => toggleInterest(item));
+                grid.appendChild(block);
+            });
+        }
+
+        function renderSectionPager(pagerEl, cat, items) {
+            const total = sectionTotalPages(items);
+            const current = sectionPages[cat] || 0;
+            let html = `<button onclick="changeSectionPage('${cat}', -1)" ${current === 0 ? 'disabled' : ''}>&larr; Prev</button>`;
+            html += `<span class="page-info">Page ${current + 1} of ${total}</span>`;
+            html += `<div class="page-numbers">`;
+            for (let i = 0; i < total; i++) {
+                html += `<a class="${i === current ? 'active' : ''}" onclick="goSectionPage('${cat}', ${i})">${i + 1}</a>`;
+            }
+            html += `</div>`;
+            html += `<button onclick="changeSectionPage('${cat}', 1)" ${current >= total - 1 ? 'disabled' : ''}>Next &rarr;</button>`;
+            pagerEl.innerHTML = html;
+        }
+
+        window.changeSectionPage = function(cat, delta) {
+            const groups = groupByCategory(data.items);
+            const total = sectionTotalPages(groups[cat]);
+            let current = sectionPages[cat] || 0;
+            current = Math.max(0, Math.min(total - 1, current + delta));
+            sectionPages[cat] = current;
+            renderCatalog();
+            const section = document.getElementById(`cat-${slug(cat)}`);
+            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        window.goSectionPage = function(cat, page) {
+            const groups = groupByCategory(data.items);
+            const total = sectionTotalPages(groups[cat]);
+            sectionPages[cat] = Math.max(0, Math.min(total - 1, page));
+            renderCatalog();
+            const section = document.getElementById(`cat-${slug(cat)}`);
+            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        function renderCatalog() {
+            catalogEl.innerHTML = '';
+            console.log('renderCatalog called, items:', data.items ? data.items.length : 0);
+            const h = data.header || {};
+
+            // Hero Header
+            const hero = document.createElement('div');
+            hero.className = 'hero-header';
+            hero.innerHTML = `
+                <img src="${h.logo || 'SewHouseLA_Logo.png'}" alt="Sew House LA" class="logo" onerror="this.style.display='none'">
+                <h1>${h.title || 'Sew House'}</h1>
+                <div class="contact">${h.phone || '213-308-0288'}<span>|</span>${h.email || 'bridie@sewhousela.com'}</div>
+                <div class="tagline">Handcrafted pottery, lighting &amp; statues — Los Angeles</div>
+            `;
+            catalogEl.appendChild(hero);
+
+            // Sticky Section Nav
+            const groups = groupByCategory(data.items);
+            const categories = Object.keys(groups).sort();
+            const nav = document.createElement('nav');
+            nav.className = 'section-nav';
+            let navHTML = '';
+            categories.forEach(cat => {
+                navHTML += `<a href="#cat-${slug(cat)}" onclick="highlightNav(this)">${cat}</a>`;
+            });
+            navHTML += `
+                <div class="nav-actions">
+                    <input type="text" id="itemSearch" placeholder="Item #" style="width:70px;" onkeydown="if(event.key==='Enter')searchItem()">
+                    <button onclick="searchItem()">Find</button>
+                    <button class="secondary" onclick="toggleDrawer(true)">My List</button>
+                </div>
+            `;
+            nav.innerHTML = navHTML;
+            catalogEl.appendChild(nav);
+
+            // Sections
+            categories.forEach(cat => {
+                const items = groups[cat];
+                if (!sectionPages[cat]) sectionPages[cat] = 0;
+
+                const section = document.createElement('section');
+                section.className = 'cat-section';
+                section.id = `cat-${slug(cat)}`;
+
+                const header = document.createElement('div');
+                header.className = 'cat-section-header';
+                header.innerHTML = `<h2>${cat}</h2><span class="count">${items.length} items</span>`;
+                section.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'item-grid';
+                renderSectionGrid(grid, items, sectionPages[cat]);
+                section.appendChild(grid);
+
+                const pager = document.createElement('div');
+                pager.className = 'section-pager';
+                renderSectionPager(pager, cat, items);
+                section.appendChild(pager);
+
+                catalogEl.appendChild(section);
+            });
+
+            // Footer
+            const footer = document.createElement('div');
+            footer.className = 'page-footer';
+            footer.innerHTML = `${h.title || 'Sew House LA'} &nbsp;&middot;&nbsp; ${h.phone || '213-308-0288'} &nbsp;&middot;&nbsp; ${h.email || 'bridie@sewhousela.com'}`;
+            catalogEl.appendChild(footer);
+        }
+
+        // ===== SEARCH ITEM =====
+        function searchItem() {
+            const q = document.getElementById('itemSearch').value.trim();
+            if (!q) return;
+            const num = parseInt(q);
+            const item = data.items.find(i => i.itemNum === num || String(i.itemNum) === q);
+            if (!item) { alert('Item ' + q + ' not found.'); return; }
+            const block = document.querySelector(`.item-block[data-id="${item.id}"]`);
+            if (block) {
+                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                block.classList.add('highlight-search');
+                setTimeout(() => block.classList.remove('highlight-search'), 1500);
+            }
+        }
+
+        // ===== PRICE SHEET =====
+        function renderPriceSheet() {
+            const items = data.items || [];
+            if (!items.length) return;
+            const showPrices = data.showPrices !== false;
+            const btn = document.getElementById('priceSheetBtn');
+            if (btn) btn.textContent = showPrices ? 'View Price Sheet' : 'Request Price Sheet';
+
+            let rows = '';
+            items.forEach(item => {
+                const priceCell = showPrices ? `$${item.price || 45}` : '<em style="color:#999;">Contact for pricing</em>';
+                rows += `<tr><td>No. ${item.itemNum}</td><td>${escapeHtml(item.description || 'Handcrafted piece')}</td><td>${priceCell}</td></tr>`;
+            });
+
+            const title = showPrices ? 'Price Sheet' : 'Item List';
+            const note = showPrices
+                ? '<strong>Note:</strong> Prices listed are standard retail. Contact us for wholesale inquiries or custom orders.'
+                : '<strong>Note:</strong> Prices available upon request. Contact us for current pricing and availability.';
+
+            priceModalTitle.textContent = title;
+            priceModalBody.innerHTML = `
+                <table class="price-table">
+                    <thead><tr><th>Item No.</th><th>Description</th><th>${showPrices ? 'Price' : 'Availability'}</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="price-note">${note}</div>
+            `;
+        }
+
+        window.openPriceModal = function() {
+            priceModal.classList.add('open');
+            priceModalBackdrop.classList.add('show');
+        };
+        window.closePriceModal = function() {
+            priceModal.classList.remove('open');
+            priceModalBackdrop.classList.remove('show');
+        };
+        window.printPriceSheet = function() { window.print(); };
+        window.emailPriceRequest = function() {
+            const h = data.header || {};
+            const showPrices = data.showPrices !== false;
+            const subject = encodeURIComponent((showPrices ? 'Price Sheet' : 'Catalog Inquiry') + ' — ' + (h.title || 'Sew House LA'));
+            const body = encodeURIComponent(showPrices
+                ? 'Hello,\n\nI would like to request a price sheet for your catalog.\n\nThank you!'
+                : 'Hello,\n\nI am interested in items from your catalog and would like pricing and availability information.\n\nThank you!');
+            window.location.href = `mailto:${h.email || 'bridie@sewhousela.com'}?subject=${subject}&body=${body}`;
+        };
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== INTEREST LIST =====
+        function toggleInterest(item) {
+            const idx = interestList.findIndex(l => l.itemNum === item.itemNum);
+            if (idx >= 0) {
+                interestList.splice(idx, 1);
+            } else {
+                interestList.push({ itemNum: item.itemNum, desc: item.description || 'Handcrafted piece', imgDataUrl: item.image });
+            }
+            saveInterestList();
+            renderCatalog();
+            renderInterestDrawer();
+        }
+
+        function renderInterestDrawer() {
+            badgeCount.textContent = interestList.length;
+            interestBadge.classList.toggle('visible', interestList.length > 0);
+            if (interestList.length === 0) {
+                drawerBody.innerHTML = '<div class="interest-empty">No items selected yet.<br>Tap any item to add it.</div>';
+                return;
+            }
+            drawerBody.innerHTML = '';
+            interestList.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'interest-item';
+                div.innerHTML = `<img src="${item.imgDataUrl}" alt="No. ${item.itemNum}"><div class="interest-item-info"><div class="num">No. ${item.itemNum}</div><div class="desc">${escapeHtml(item.desc)}</div></div><button class="unselect" onclick="removeFromList(${item.itemNum})" title="Remove">&times;</button>`;
+                drawerBody.appendChild(div);
+            });
+        }
+
+        window.removeFromList = function(num) {
+            interestList = interestList.filter(l => l.itemNum !== num);
+            saveInterestList();
+            renderInterestDrawer();
+            renderCatalog();
+        };
+        window.clearInterestList = function() {
+            interestList = [];
+            saveInterestList();
+            renderInterestDrawer();
+            renderCatalog();
+        };
+        window.toggleDrawer = function(show) {
+            interestDrawer.classList.toggle('open', show);
+            drawerBackdrop.classList.toggle('show', show);
+        };
+        function saveInterestList() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(interestList)); } catch (e) {}
+        }
+        function loadInterestList() {
+            try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+        }
+
+        // ===== PRINT INTEREST LIST =====
+        window.printInterestList = function() {
+            const name = document.getElementById('clientName').value || 'Client';
+            const email = document.getElementById('clientEmail').value || '';
+            const note = document.getElementById('clientNote').value || '';
+            const h = data.header || {};
+
+            let html = `<html><head><title>My List — Sew House LA</title>
+                <style>
+                    body { font-family: Georgia, serif; color: #2c2c2c; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+                    h1 { font-size: 22px; letter-spacing: 3px; text-transform: uppercase; text-align: center; border-bottom: 1.5px solid #c4a882; padding-bottom: 14px; }
+                    .meta { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #7a7a7a; margin: 20px 0; }
+                    .item { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #ece8e2; }
+                    .item img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+                    .item .num { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #5a4a3a; }
+                    .item .desc { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #7a7a7a; }
+                    .footer { text-align: center; margin-top: 30px; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; color: #aaa; letter-spacing: 1px; text-transform: uppercase; }
+                </style></head><body>
+                <h1>Sew House — My List</h1>
+                <div class="meta"><strong>Name:</strong> ${escapeHtml(name)}<br><strong>Email:</strong> ${escapeHtml(email || '—')}<br>${note ? '<strong>Note:</strong> ' + escapeHtml(note).replace(/\n/g, '<br>') + '<br>' : ''}<strong>Items:</strong> ${interestList.length}</div>`;
+            interestList.forEach(item => { html += `<div class="item"><img src="${item.imgDataUrl}"><div><div class="num">No. ${item.itemNum}</div><div class="desc">${escapeHtml(item.desc)}</div></div></div>`; });
+            html += `<div class="footer">${h.title || 'Sew House LA'} &nbsp;&middot;&nbsp; ${h.phone || '213-308-0288'} &nbsp;&middot;&nbsp; ${h.email || 'bridie@sewhousela.com'}</div></body></html>`;
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+            setTimeout(() => win.print(), 300);
+        };
+
+        // ===== EMAIL INQUIRY =====
+        window.emailInterestList = function() {
+            const name = document.getElementById('clientName').value || 'Client';
+            const email = document.getElementById('clientEmail').value || '';
+            const note = document.getElementById('clientNote').value || '';
+            const h = data.header || {};
+            let body = `Hello ${h.title || 'Sew House LA'},%0D%0A%0D%0AMy name is ${name} and I would like to request pricing for the following items:%0D%0A%0D%0A`;
+            interestList.forEach(item => { body += `- Item No. ${item.itemNum} (${item.desc})%0D%0A`; });
+            if (note) body += `%0D%0ANotes / Questions:%0D%0A${note}%0D%0A`;
+            body += `%0D%0APlease send me pricing and availability for these items.%0D%0A%0D%0AThank you!%0D%0A${name}`;
+            if (email) body += `%0D%0A${email}`;
+            window.location.href = `mailto:${h.email || 'bridie@sewhousela.com'}?subject=${encodeURIComponent('Pricing Request from ' + name)}&body=${body}`;
+        };
+
+        // ===== START =====
+        init();
+    </script>
+</body>
+</html>

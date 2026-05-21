@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sew House LA — Catalog Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #c4a882;
+            --accent-light: #d4b892;
+            --text: #2c2c2c;
+            --text-muted: #7a7a7a;
+            --bg-cream: #f7f5f2;
+            --border: #e0dcd6;
+            --danger: #c44;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: #f0ede8;
+            line-height: 1.5;
+            padding-bottom: 60px;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            background: #fff;
+            border-bottom: 2px solid var(--accent);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .app-header h1 {
+            font-family: 'Georgia', serif;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .app-header .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== SECTIONS ===== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: #fff;
+            border-radius: 8px;
+            margin-top: 24px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ===== FORM GRID ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .field input:focus, .field select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* ===== UPLOAD ===== */
+        .upload-zone {
+            border: 2px dashed var(--accent);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-cream);
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            background: #fff;
+            border-color: var(--accent-light);
+        }
+
+        .upload-zone h3 {
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 6px;
+        }
+
+        .upload-zone p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .upload-zone input { display: none; }
+
+        .upload-btn {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 8px 22px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .upload-btn:hover { background: var(--accent-light); }
+
+        /* ===== ITEM LIST ===== */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item-card {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+            transition: box-shadow 0.15s;
+            cursor: grab;
+        }
+
+        .item-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .item-card.dragging { opacity: 0.5; border-color: var(--accent); }
+
+        .item-card .drag-handle {
+            width: 20px;
+            text-align: center;
+            color: #ccc;
+            font-size: 16px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .item-card img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .item-fields {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 90px 1fr 90px 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .item-fields input {
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .item-fields input:focus { outline: none; border-color: var(--accent); }
+        .item-fields input.item-num { font-weight: 600; text-align: center; }
+        .item-fields input.item-price { text-align: right; }
+
+        .item-card .remove-btn {
+            padding: 6px 12px;
+            background: #f5f0ec;
+            color: var(--danger);
+            border: 1px solid #e0d0c8;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .item-card .remove-btn:hover { background: #faeaea; border-color: var(--danger); }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+            font-size: 13px;
+        }
+
+        /* ===== PAGE PREVIEW ===== */
+        .preview-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-page {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            background: var(--bg-cream);
+        }
+
+        .preview-page-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .preview-grid img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        @media (max-width: 700px) {
+            .preview-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* ===== ACTIONS ===== */
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); }
+        .btn-secondary { background: #555; color: #fff; }
+        .btn-secondary:hover { background: #777; }
+        .btn-danger { background: #fff; color: var(--danger); border: 1px solid var(--danger) !important; }
+        .btn-danger:hover { background: #faeaea; }
+
+        .status-msg {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #2a8;
+            min-height: 18px;
+        }
+
+        /* ===== DUPLICATE DIALOG ===== */
+        .dup-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 2998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .dup-backdrop.show { opacity: 1; pointer-events: auto; }
+
+        .dup-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.96);
+            width: 90vw;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            z-index: 2999;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .dup-dialog.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .dup-header {
+            padding: 20px 24px 14px;
+            border-bottom: 1.5px solid var(--accent);
+            background: #faf8f5;
+        }
+        .dup-header h3 {
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #3a3a3a;
+        }
+        .dup-header p {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .dup-body {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .dup-col {
+            flex: 1;
+            text-align: center;
+        }
+        .dup-col img {
+            width: 100%;
+            max-width: 180px;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .dup-label {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .dup-meta {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .dup-vs {
+            font-family: 'Georgia', serif;
+            font-size: 14px;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .dup-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding: 14px 24px 20px;
+            border-top: 1px solid var(--border);
+            background: #faf8f5;
+            border-radius: 0 0 8px 8px;
+        }
+        .dup-actions button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <div>
+            <h1>Sew House — Catalog Admin</h1>
+            <div class="subtitle">Build, preview, and export your pottery catalog</div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- SETTINGS -->
+        <div class="section">
+            <div class="section-title">Catalog Settings</div>
+            <div class="form-grid">
+                <div class="field">
+                    <label>Business Name</label>
+                    <input type="text" id="settingTitle" value="Sew House">
+                </div>
+                <div class="field">
+                    <label>Phone</label>
+                    <input type="text" id="settingPhone" value="213-308-0288">
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input type="text" id="settingEmail" value="bridie@sewhousela.com">
+                </div>
+                <div class="field">
+                    <label>Items Per Page</label>
+                    <select id="settingItemsPerPage">
+                        <option value="12" selected>12 (3×4)</option>
+                        <option value="9">9 (3×3)</option>
+                        <option value="6">6 (2×3)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Standard Price ($)</label>
+                    <input type="number" id="settingStdPrice" value="45" min="0">
+                </div>
+                <div class="field" style="display:flex;align-items:flex-end;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;text-transform:none;letter-spacing:0;color:var(--text);">
+                        <input type="checkbox" id="settingShowPrices" checked style="width:auto;">
+                        Show prices in catalog
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPLOAD -->
+        <div class="section">
+            <div class="section-title">Upload Photos</div>
+            <div class="upload-zone" id="uploadZone">
+                <h3>Drag &amp; Drop Images Here</h3>
+                <p>JPG or PNG — auto-cropped to square. Near-duplicates are detected automatically.</p>
+                <input type="file" id="fileInput" accept="image/*" multiple>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose Files</button>
+            </div>
+        </div>
+
+        <!-- DUPLICATE DIALOG -->
+        <div class="dup-backdrop" id="dupBackdrop"></div>
+        <div class="dup-dialog" id="dupDialog">
+            <div class="dup-header">
+                <h3>Possible Duplicate Detected</h3>
+                <p>This image looks very similar to one already in your catalog.</p>
+            </div>
+            <div class="dup-body">
+                <div class="dup-col">
+                    <div class="dup-label">Already Uploaded</div>
+                    <img id="dupExistingImg" src="" alt="Existing">
+                    <div class="dup-meta" id="dupExistingMeta"></div>
+                </div>
+                <div class="dup-vs">VS</div>
+                <div class="dup-col">
+                    <div class="dup-label">New Upload</div>
+                    <img id="dupNewImg" src="" alt="New">
+                </div>
+            </div>
+            <div class="dup-actions">
+                <button class="btn-secondary" onclick="skipDuplicate()">Skip This Image</button>
+                <button class="btn-primary" onclick="addDuplicateAnyway()">Add Anyway</button>
+            </div>
+        </div>
+
+        <!-- ITEMS -->
+        <div class="section">
+            <div class="section-title">Items (<span id="itemCount">0</span>)</div>
+            <div class="item-list" id="itemList">
+                <div class="empty-state">No items yet. Upload photos to get started.</div>
+            </div>
+            <div class="actions" style="margin-top:18px;">
+                <button class="btn-secondary" onclick="regenerateNumbers()">Regenerate All Numbers</button>
+                <button class="btn-danger" onclick="clearAllItems()">Remove All Items</button>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="section">
+            <div class="section-title">Page Preview</div>
+            <div class="preview-pages" id="previewPages">
+                <div class="empty-state">Add items to see page previews.</div>
+            </div>
+        </div>
+
+        <!-- PRICE SHEET PREVIEW -->
+        <div class="section">
+            <div class="section-title">Price Sheet Preview</div>
+            <div id="priceSheetPreview">
+                <div class="empty-state">Add items to see price sheet preview.</div>
+            </div>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="section">
+            <div class="section-title">Publish</div>
+            <div class="actions">
+                <button class="btn-primary" onclick="previewCatalog()">Preview Catalog</button>
+                <button class="btn-primary" onclick="exportCatalog()">Export for Web</button>
+                <button class="btn-secondary" onclick="saveDraft()">Save Draft</button>
+            </div>
+            <div class="status-msg" id="statusMsg"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // ===== STATE =====
+        const STORAGE_KEY = 'sewhouse_catalog_admin_v1';
+        let items = [];
+        let dragSrc = null;
+        let pendingUpload = null; // holds {img, cropped, file} when duplicate check is pending
+
+        // ===== DOM =====
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const itemList = document.getElementById('itemList');
+        const itemCount = document.getElementById('itemCount');
+        const previewPages = document.getElementById('previewPages');
+        const statusMsg = document.getElementById('statusMsg');
+        const dupBackdrop = document.getElementById('dupBackdrop');
+        const dupDialog = document.getElementById('dupDialog');
+        const dupExistingImg = document.getElementById('dupExistingImg');
+        const dupNewImg = document.getElementById('dupNewImg');
+        const dupExistingMeta = document.getElementById('dupExistingMeta');
+
+        // ===== UPLOAD =====
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            processQueue(imageFiles);
+        }
+
+        async function processQueue(imageFiles) {
+            const stdPrice = document.getElementById('settingStdPrice').value || 45;
+            for (const file of imageFiles) {
+                const dataUrl = await readFileAsDataURL(file);
+                const img = await loadImage(dataUrl);
+                const cropped = cropToSquare(img);
+                const hash = await computeImageHash(img);
+
+                const duplicate = findDuplicate(hash);
+                if (duplicate) {
+                    const proceed = await showDuplicateDialog(duplicate, cropped);
+                    if (!proceed) continue;
+                }
+
+                const id = Date.now() + Math.random().toString(36).substr(2, 9);
+                const itemNum = generateUniqueNumber();
+                items.push({
+                    id, itemNum,
+                    image: cropped,
+                    hash: hash,
+                    description: 'Handcrafted pottery piece',
+                    price: stdPrice,
+                    category: '',
+                    style: ''
+                });
+                refreshUI();
+            }
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = src;
+            });
+        }
+
+        // ===== PERCEPTUAL HASH (aHash) =====
+        function computeImageHash(img) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 8;
+                canvas.height = 8;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 8, 8);
+                const data = ctx.getImageData(0, 0, 8, 8).data;
+                let sum = 0;
+                const gray = [];
+                for (let i = 0; i < data.length; i += 4) {
+                    const g = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+                    gray.push(g);
+                    sum += g;
+                }
+                const avg = sum / 64;
+                let hash = '';
+                for (let i = 0; i < 64; i++) {
+                    hash += gray[i] >= avg ? '1' : '0';
+                }
+                resolve(hash);
+            });
+        }
+
+        function hammingDistance(a, b) {
+            let dist = 0;
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) dist++;
+            }
+            return dist;
+        }
+
+        function findDuplicate(hash) {
+            const THRESHOLD = 5; // max 5 bits different out of 64
+            for (const item of items) {
+                if (!item.hash) continue;
+                const dist = hammingDistance(hash, item.hash);
+                if (dist <= THRESHOLD) {
+                    return { item, distance: dist };
+                }
+            }
+            return null;
+        }
+
+        function showDuplicateDialog(duplicate, newImageDataUrl) {
+            return new Promise((resolve) => {
+                pendingUpload = { resolve };
+                dupExistingImg.src = duplicate.item.image;
+                dupNewImg.src = newImageDataUrl;
+                dupExistingMeta.textContent = `Item No. ${duplicate.item.itemNum} — ${duplicate.item.description || 'No description'}`;
+                dupBackdrop.classList.add('show');
+                dupDialog.classList.add('open');
+            });
+        }
+
+        window.skipDuplicate = function() {
+            dupBackdrop.classList.remove('show');
+            dupDialog.classList.remove('open');
+            if (pendingUpload) { pendingUpload.resolve(false); pendingUpload = null; }
+        };
+
+        window.addDuplicateAnyway = function() {
+            dupBackdrop.classList.remove('show');
+            dupDialog.classList.remove('open');
+            if (pendingUpload) { pendingUpload.resolve(true); pendingUpload = null; }
+        };
+
+        function cropToSquare(img) {
+            const size = Math.min(img.width, img.height);
+            const sx = (img.width - size) / 2;
+            const sy = (img.height - size) / 2;
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, sx, sy, size, size, 0, 0, 800, 800);
+            return canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        function generateUniqueNumber() {
+            const existing = items.map(i => i.itemNum);
+            let num;
+            do { num = Math.floor(Math.random() * 9000) + 1000; }
+            while (existing.includes(num));
+            return num;
+        }
+
+        // ===== UI REFRESH =====
+        function refreshUI() {
+            itemCount.textContent = items.length;
+            renderItemList();
+            renderPreview();
+            renderPriceSheetPreview();
+        }
+
+        function renderItemList() {
+            if (!items.length) {
+                itemList.innerHTML = '<div class="empty-state">No items yet. Upload photos to get started.</div>';
+                return;
+            }
+            itemList.innerHTML = '';
+            items.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.draggable = true;
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <div class="drag-handle">&#9776;</div>
+                    <img src="${item.image}" alt="Item ${item.itemNum}">
+                    <div class="item-fields">
+                        <input type="text" class="item-num" value="${item.itemNum}" title="Item Number (auto-generated)" readonly tabindex="-1" style="background:#f5f3f0;border:none;cursor:default;">
+                        <input type="text" value="${escapeHtml(item.description)}" placeholder="Description" onchange="updateItem(${index}, 'description', this.value)">
+                        <input type="number" class="item-price" value="${item.price}" placeholder="Price" onchange="updateItem(${index}, 'price', this.value)">
+                        <input type="text" value="${escapeHtml(item.category)}" placeholder="Category" onchange="updateItem(${index}, 'category', this.value)">
+                        <input type="text" value="${escapeHtml(item.style)}" placeholder="Style" onchange="updateItem(${index}, 'style', this.value)">
+                    </div>
+                    <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+                `;
+                // Drag events
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
+                itemList.appendChild(card);
+            });
+        }
+
+        function renderPreview() {
+            if (!items.length) {
+                previewPages.innerHTML = '<div class="empty-state">Add items to see page previews.</div>';
+                return;
+            }
+            const perPage = parseInt(document.getElementById('settingItemsPerPage').value) || 12;
+            const pages = Math.ceil(items.length / perPage);
+            previewPages.innerHTML = '';
+            for (let p = 0; p < pages; p++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'preview-page';
+                const label = document.createElement('div');
+                label.className = 'preview-page-label';
+                label.textContent = `Page ${p + 1}`;
+                pageDiv.appendChild(label);
+                const grid = document.createElement('div');
+                grid.className = 'preview-grid';
+                for (let i = 0; i < perPage; i++) {
+                    const idx = p * perPage + i;
+                    if (idx >= items.length) break;
+                    const img = document.createElement('img');
+                    img.src = items[idx].image;
+                    img.title = `No. ${items[idx].itemNum}`;
+                    grid.appendChild(img);
+                }
+                pageDiv.appendChild(grid);
+                previewPages.appendChild(pageDiv);
+            }
+        }
+
+        function renderPriceSheetPreview() {
+            const container = document.getElementById('priceSheetPreview');
+            if (!items.length) {
+                container.innerHTML = '<div class="empty-state">Add items to see price sheet preview.</div>';
+                return;
+            }
+            const showPrices = document.getElementById('settingShowPrices').checked;
+            let rows = '';
+            items.forEach(item => {
+                const priceDisplay = showPrices ? '$' + item.price : 'Contact for pricing';
+                rows += `<tr><td style="padding:8px 12px;border-bottom:1px solid #ece8e2;font-size:13px;">No. ${item.itemNum}</td><td style="padding:8px 12px;border-bottom:1px solid #ece8e2;font-size:13px;">${escapeHtml(item.description || 'Handcrafted pottery piece')}</td><td style="padding:8px 12px;border-bottom:1px solid #ece8e2;font-size:13px;text-align:right;font-weight:600;color:#5a4a3a;">${priceDisplay}</td></tr>`;
+            });
+            container.innerHTML = `
+                <div style="font-family:'Helvetica Neue',Arial,sans-serif;">
+                    <p style="font-size:11px;color:#999;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">${showPrices ? 'Prices will be visible to clients' : 'Prices hidden — clients will contact you for pricing'}</p>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead><tr><th style="text-align:left;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7a7a7a;font-weight:500;border-bottom:1.5px solid var(--accent);">Item No.</th><th style="text-align:left;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7a7a7a;font-weight:500;border-bottom:1.5px solid var(--accent);">Description</th><th style="text-align:right;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7a7a7a;font-weight:500;border-bottom:1.5px solid var(--accent);">Price</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ===== DRAG & DROP =====
+        function handleDragStart(e) {
+            dragSrc = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        function handleDrop(e) {
+            e.stopPropagation();
+            if (dragSrc !== this) {
+                const fromIdx = parseInt(dragSrc.dataset.index);
+                const toIdx = parseInt(this.dataset.index);
+                const [moved] = items.splice(fromIdx, 1);
+                items.splice(toIdx, 0, moved);
+                refreshUI();
+            }
+            return false;
+        }
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+        }
+
+        // ===== ITEM ACTIONS =====
+        window.updateItem = function(index, field, value) {
+            if (field === 'price') {
+                value = parseFloat(value) || 0;
+            }
+            items[index][field] = value;
+            renderPreview();
+            renderPriceSheetPreview();
+        };
+
+        window.removeItem = function(index) {
+            items.splice(index, 1);
+            refreshUI();
+        };
+
+        window.regenerateNumbers = function() {
+            const used = new Set();
+            items.forEach(item => {
+                let num;
+                do { num = Math.floor(Math.random() * 9000) + 1000; }
+                while (used.has(num));
+                used.add(num);
+                item.itemNum = num;
+            });
+            refreshUI();
+        };
+
+        window.clearAllItems = function() {
+            if (!confirm('Remove all items? This cannot be undone.')) return;
+            items = [];
+            refreshUI();
+        };
+
+        // ===== CATALOG DATA BUILDER =====
+        function buildCatalogData() {
+            return {
+                header: {
+                    title: document.getElementById('settingTitle').value || 'Sew House',
+                    phone: document.getElementById('settingPhone').value || '213-308-0288',
+                    email: document.getElementById('settingEmail').value || 'bridie@sewhousela.com',
+                    logo: 'SewHouseLA_Logo.png'
+                },
+                itemsPerPage: parseInt(document.getElementById('settingItemsPerPage').value) || 12,
+                showPrices: document.getElementById('settingShowPrices').checked,
+                items: items.map(i => {
+                    const { hash, ...rest } = i;
+                    return rest;
+                })
+            };
+        }
+
+        // ===== PREVIEW CATALOG =====
+        window.previewCatalog = function() {
+            const data = buildCatalogData();
+            localStorage.setItem('sewhouse_catalog_preview', JSON.stringify(data));
+            window.open('catalog.html?preview=1', '_blank');
+        };
+
+        // ===== EXPORT =====
+        window.exportCatalog = function() {
+            const data = buildCatalogData();
+            const jsContent = `const CATALOG_DATA = ${JSON.stringify(data, null, 2)};`;
+            const blob = new Blob([jsContent], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'catalog-data.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showStatus('Exported catalog-data.js. Upload this file alongside catalog.html and SewHouseLA_Logo.png.');
+        };
+
+        // ===== SAVE DRAFT =====
+        window.saveDraft = function() {
+            const data = buildCatalogData();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            showStatus('Draft saved to browser storage.');
+        };
+
+        function loadDraft() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.header) {
+                    document.getElementById('settingTitle').value = data.header.title || '';
+                    document.getElementById('settingPhone').value = data.header.phone || '';
+                    document.getElementById('settingEmail').value = data.header.email || '';
+                }
+                if (data.itemsPerPage) document.getElementById('settingItemsPerPage').value = data.itemsPerPage;
+                if (typeof data.showPrices === 'boolean') document.getElementById('settingShowPrices').checked = data.showPrices;
+                if (data.items) {
+                    items = data.items;
+                    // Recompute hashes for loaded items (async, fire-and-forget)
+                    items.forEach(item => {
+                        if (!item.hash && item.image) {
+                            const img = new Image();
+                            img.onload = () => { computeImageHash(img).then(h => { item.hash = h; }); };
+                            img.src = item.image;
+                        }
+                    });
+                }
+                refreshUI();
+                showStatus('Draft loaded from browser storage.');
+            } catch (e) {}
+        }
+
+        function showStatus(msg) {
+            statusMsg.textContent = msg;
+            setTimeout(() => { statusMsg.textContent = ''; }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== INIT =====
+        loadDraft();
+    </script>
+</body>
+</html>

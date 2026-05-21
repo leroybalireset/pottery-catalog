@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><title>Catalog Diagnostic</title>
+<script src="catalog-data.js"></script>
+</head>
+<body>
+<h1>Diagnostic</h1>
+<div id="output"></div>
+<script>
+const out = document.getElementById('output');
+function log(msg) { out.innerHTML += msg + '<br>'; }
+
+log('Script loaded.');
+log('typeof CATALOG_DATA: ' + typeof CATALOG_DATA);
+if (typeof CATALOG_DATA !== 'undefined') {
+    log('Has items: ' + (CATALOG_DATA.items ? 'YES' : 'NO'));
+    if (CATALOG_DATA.items) {
+        log('Item count: ' + CATALOG_DATA.items.length);
+        if (CATALOG_DATA.items.length > 0) {
+            log('First item id: ' + CATALOG_DATA.items[0].id);
+            log('First item category: ' + CATALOG_DATA.items[0].category);
+            log('First image length: ' + (CATALOG_DATA.items[0].image ? CATALOG_DATA.items[0].image.length : 'NO IMAGE'));
+        }
+    }
+} else {
+    log('ERROR: CATALOG_DATA is undefined');
+}
+</script>
+</body>
+</html>

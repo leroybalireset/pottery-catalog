@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sew House LA — Bulk Audit</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+        --accent:#c4a882;
+        --accent-light:#d4b892;
+        --text:#2c2c2c;
+        --text-muted:#7a7a7a;
+        --bg-cream:#f7f5f2;
+        --border:#e0dcd6;
+        --danger:#c44;
+        --pottery:#c4785a;
+        --lighting:#c8b090;
+        --statues:#8a7a6a;
+        --skip:#aaa;
+    }
+    body {
+        font-family:'Helvetica Neue',Arial,sans-serif;
+        color:var(--text);
+        background:#f0ede8;
+        line-height:1.5;
+    }
+    /* ===== HEADER ===== */
+    .app-header {
+        background:#fff;
+        border-bottom:2px solid var(--accent);
+        padding:16px 24px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        flex-wrap:wrap;
+        gap:10px;
+        position:sticky;
+        top:0;
+        z-index:100;
+    }
+    .app-header h1 {
+        font-family:Georgia,serif;
+        font-size:20px;
+        font-weight:400;
+        letter-spacing:3px;
+        text-transform:uppercase;
+    }
+    .app-header .subtitle { font-size:12px; color:var(--text-muted); }
+    .header-actions { display:flex; gap:8px; align-items:center; }
+    .btn {
+        padding:8px 18px;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        font-size:13px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        transition:opacity .2s;
+    }
+    .btn:hover { opacity:.85; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-secondary { background:#e0dcd6; color:var(--text); }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+    .badge {
+        display:inline-block;
+        padding:2px 10px;
+        border-radius:12px;
+        font-size:11px;
+        font-weight:600;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:#fff;
+    }
+    .badge-pottery { background:var(--pottery); }
+    .badge-lighting { background:var(--lighting); }
+    .badge-statues { background:var(--statues); }
+    .badge-skip { background:var(--skip); }
+    .badge-none { background:#ccc; }
+
+    /* ===== SCREENS ===== */
+    .screen { display:none; padding:24px; }
+    .screen.active { display:block; }
+
+    /* ===== IMPORT SCREEN ===== */
+    #importScreen { max-width:900px; margin:0 auto; }
+    .drop-zone {
+        border:3px dashed var(--border);
+        border-radius:12px;
+        padding:60px 40px;
+        text-align:center;
+        background:#fff;
+        transition:all .2s;
+        cursor:pointer;
+        margin-bottom:24px;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color:var(--accent);
+        background:#faf8f5;
+    }
+    .drop-zone h2 {
+        font-family:Georgia,serif;
+        font-size:22px;
+        color:var(--text);
+        margin-bottom:10px;
+    }
+    .drop-zone p { color:var(--text-muted); font-size:14px; }
+    .drop-zone .hint {
+        margin-top:16px;
+        font-size:12px;
+        color:var(--text-muted);
+        background:var(--bg-cream);
+        display:inline-block;
+        padding:8px 16px;
+        border-radius:20px;
+    }
+    .import-progress {
+        background:#fff;
+        border-radius:8px;
+        padding:20px;
+        margin-bottom:24px;
+        display:none;
+    }
+    .import-progress.active { display:block; }
+    .import-progress .bar-wrap {
+        height:8px;
+        background:#e0dcd6;
+        border-radius:4px;
+        overflow:hidden;
+        margin:10px 0;
+    }
+    .import-progress .bar {
+        height:100%;
+        background:var(--accent);
+        width:0%;
+        transition:width .2s;
+    }
+    .stats-row {
+        display:flex;
+        gap:20px;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+    }
+    .stat-box {
+        background:#fff;
+        border-radius:8px;
+        padding:16px 24px;
+        min-width:120px;
+        text-align:center;
+    }
+    .stat-box .num {
+        font-size:32px;
+        font-weight:300;
+        color:var(--accent);
+        line-height:1;
+    }
+    .stat-box .label {
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:1px;
+        color:var(--text-muted);
+        margin-top:6px;
+    }
+
+    /* ===== THUMBNAIL GRID ===== */
+    .thumb-grid {
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+        gap:12px;
+    }
+    .thumb-card {
+        background:#fff;
+        border-radius:8px;
+        overflow:hidden;
+        cursor:pointer;
+        position:relative;
+        border:2px solid transparent;
+        transition:transform .15s,border-color .15s;
+    }
+    .thumb-card:hover { transform:translateY(-2px); border-color:var(--accent); }
+    .thumb-card img {
+        width:100%;
+        height:120px;
+        object-fit:cover;
+        display:block;
+    }
+    .thumb-card .thumb-info {
+        padding:8px;
+        font-size:11px;
+    }
+    .thumb-card .thumb-num {
+        font-weight:600;
+        color:var(--text);
+    }
+    .thumb-card .thumb-cat {
+        margin-top:2px;
+    }
+    .thumb-card .thumb-status {
+        position:absolute;
+        top:6px;
+        right:6px;
+    }
+    .thumb-card.selected { border-color:var(--accent); box-shadow:0 0 0 3px rgba(196,168,130,.2); }
+
+    /* ===== AUDIT SCREEN ===== */
+    #auditScreen {
+        position:fixed;
+        inset:0;
+        background:#1a1a1a;
+        z-index:200;
+        display:none;
+        flex-direction:column;
+    }
+    #auditScreen.active { display:flex; }
+    .audit-top {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:12px 24px;
+        background:#252525;
+        color:#fff;
+        border-bottom:1px solid #333;
+    }
+    .audit-top .progress-text {
+        font-size:14px;
+        color:#aaa;
+    }
+    .audit-top .progress-text b { color:#fff; }
+    .audit-top .close-btn {
+        background:none;
+        border:none;
+        color:#aaa;
+        font-size:20px;
+        cursor:pointer;
+        padding:4px 8px;
+    }
+    .audit-top .close-btn:hover { color:#fff; }
+    .audit-main {
+        flex:1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+        gap:40px;
+    }
+    .audit-image-wrap {
+        position:relative;
+        max-width:60vw;
+        max-height:70vh;
+    }
+    .audit-image-wrap img {
+        max-width:100%;
+        max-height:70vh;
+        border-radius:8px;
+        box-shadow:0 20px 60px rgba(0,0,0,.5);
+        display:block;
+    }
+    .audit-image-wrap .audit-cat-badge {
+        position:absolute;
+        bottom:16px;
+        left:50%;
+        transform:translateX(-50%);
+        padding:8px 24px;
+        border-radius:20px;
+        font-size:14px;
+        font-weight:600;
+        letter-spacing:2px;
+        text-transform:uppercase;
+    }
+    .audit-controls {
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        min-width:200px;
+    }
+    .audit-controls h3 {
+        color:#888;
+        font-size:12px;
+        text-transform:uppercase;
+        letter-spacing:2px;
+        margin-bottom:6px;
+    }
+    .cat-btn {
+        padding:14px 20px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+        font-size:14px;
+        font-weight:600;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:#fff;
+        transition:transform .1s,opacity .2s;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+    .cat-btn:hover { transform:scale(1.03); }
+    .cat-btn:active { transform:scale(.98); }
+    .cat-btn .key {
+        font-size:11px;
+        opacity:.7;
+        background:rgba(0,0,0,.2);
+        padding:2px 8px;
+        border-radius:4px;
+    }
+    .cat-btn-pottery { background:var(--pottery); }
+    .cat-btn-lighting { background:var(--lighting); }
+    .cat-btn-statues { background:var(--statues); }
+    .cat-btn-skip {
+        background:#555;
+        margin-top:10px;
+    }
+    .audit-nav {
+        display:flex;
+        gap:8px;
+        margin-top:10px;
+    }
+    .audit-nav button {
+        flex:1;
+        padding:10px;
+        border:none;
+        border-radius:6px;
+        background:#333;
+        color:#aaa;
+        cursor:pointer;
+        font-size:12px;
+        text-transform:uppercase;
+        letter-spacing:1px;
+    }
+    .audit-nav button:hover { background:#444; color:#fff; }
+
+    .audit-bottom {
+        background:#252525;
+        padding:16px 24px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        border-top:1px solid #333;
+    }
+    .audit-legend {
+        display:flex;
+        gap:16px;
+        color:#888;
+        font-size:12px;
+    }
+    .audit-legend kbd {
+        background:#333;
+        padding:2px 8px;
+        border-radius:4px;
+        font-family:monospace;
+        color:#ccc;
+    }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottom-bar {
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        background:#fff;
+        border-top:1px solid var(--border);
+        padding:12px 24px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        z-index:100;
+    }
+    .bottom-bar .left { display:flex; gap:12px; align-items:center; }
+
+    /* ===== MODAL ===== */
+    .modal-backdrop {
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.6);
+        z-index:300;
+        display:none;
+        align-items:center;
+        justify-content:center;
+    }
+    .modal-backdrop.show { display:flex; }
+    .modal {
+        background:#fff;
+        border-radius:12px;
+        padding:24px;
+        max-width:500px;
+        width:90%;
+    }
+    .modal h3 {
+        font-family:Georgia,serif;
+        margin-bottom:12px;
+    }
+    .modal p { color:var(--text-muted); font-size:14px; margin-bottom:16px; }
+    .modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+    /* ===== DUPLICATE OVERLAY ===== */
+    .dup-overlay {
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.85);
+        z-index:400;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        padding:24px;
+    }
+    .dup-overlay.show { display:flex; }
+    .dup-overlay h3 { color:#fff; margin-bottom:16px; }
+    .dup-compare {
+        display:flex;
+        gap:20px;
+        margin-bottom:20px;
+        flex-wrap:wrap;
+        justify-content:center;
+    }
+    .dup-box {
+        text-align:center;
+        color:#ccc;
+    }
+    .dup-box img {
+        width:280px;
+        height:280px;
+        object-fit:cover;
+        border-radius:8px;
+        margin-bottom:8px;
+    }
+    .dup-actions { display:flex; gap:12px; }
+
+    /* ===== PRINT / EXPORT PREVIEW ===== */
+    .preview-area {
+        background:#fff;
+        border-radius:8px;
+        padding:20px;
+        margin-bottom:20px;
+    }
+    @media print {
+        .app-header, .bottom-bar, .btn, .drop-zone, .audit-top, .audit-bottom { display:none !important; }
+        .screen { display:block !important; padding:0; }
+        body { background:#fff; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+    <div>
+        <h1>Sew House LA</h1>
+        <div class="subtitle">Bulk Audit & Categorize</div>
+    </div>
+    <div class="header-actions">
+        <span id="statusMsg" style="font-size:12px;color:var(--text-muted);"></span>
+        <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+        <button class="btn btn-primary" onclick="exportCatalog()">Export Catalog</button>
+    </div>
+</header>
+
+<!-- ===== IMPORT SCREEN ===== -->
+<div id="importScreen" class="screen active">
+    <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none;">
+        <h2>Drop images here</h2>
+        <p>or click to browse your folder</p>
+        <div class="hint">JPEG, PNG, WEBP &bull; Auto-cropped to square &bull; Duplicates detected</div>
+    </div>
+
+    <div class="import-progress" id="importProgress">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span id="importLabel">Importing...</span>
+            <span id="importCount">0 / 0</span>
+        </div>
+        <div class="bar-wrap"><div class="bar" id="importBar"></div></div>
+    </div>
+
+    <div class="stats-row" id="statsRow" style="display:none;">
+        <div class="stat-box"><div class="num" id="statTotal">0</div><div class="label">Total</div></div>
+        <div class="stat-box"><div class="num" id="statPottery">0</div><div class="label">Pottery</div></div>
+        <div class="stat-box"><div class="num" id="statLighting">0</div><div class="label">Lighting</div></div>
+        <div class="stat-box"><div class="num" id="statStatues">0</div><div class="label">Statues</div></div>
+        <div class="stat-box"><div class="num" id="statSkipped">0</div><div class="label">Skipped</div></div>
+        <div class="stat-box"><div class="num" id="statUncat">0</div><div class="label">Uncategorized</div></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;" id="filterBar" style="display:none;">
+        <button class="btn btn-secondary" onclick="filterGrid('all')">All</button>
+        <button class="btn btn-secondary" onclick="filterGrid('Pottery')">Pottery</button>
+        <button class="btn btn-secondary" onclick="filterGrid('Lighting')">Lighting</button>
+        <button class="btn btn-secondary" onclick="filterGrid('Statues')">Statues</button>
+        <button class="btn btn-secondary" onclick="filterGrid('')">Uncategorized</button>
+        <button class="btn btn-secondary" onclick="filterGrid('Skipped')">Skipped</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="startAudit()">Audit Mode</button>
+    </div>
+
+    <div class="thumb-grid" id="thumbGrid"></div>
+</div>
+
+<!-- ===== AUDIT SCREEN ===== -->
+<div id="auditScreen">
+    <div class="audit-top">
+        <div class="progress-text">Auditing <b id="auditPos">1</b> of <b id="auditTotal">0</b></div>
+        <button class="close-btn" onclick="closeAudit()">&times;</button>
+    </div>
+    <div class="audit-main">
+        <div class="audit-image-wrap">
+            <img id="auditImg" src="" alt="">
+            <div class="audit-cat-badge" id="auditBadge"></div>
+        </div>
+        <div class="audit-controls">
+            <h3>Assign Category</h3>
+            <button class="cat-btn cat-btn-pottery" onclick="assignCategory('Pottery')">
+                Pottery <span class="key">1</span>
+            </button>
+            <button class="cat-btn cat-btn-lighting" onclick="assignCategory('Lighting')">
+                Lighting <span class="key">2</span>
+            </button>
+            <button class="cat-btn cat-btn-statues" onclick="assignCategory('Statues')">
+                Statues <span class="key">3</span>
+            </button>
+            <button class="cat-btn cat-btn-skip" onclick="assignCategory('Skipped')">
+                Skip / Remove <span class="key">S</span>
+            </button>
+            <div class="audit-nav">
+                <button onclick="prevItem()">&#9664; Prev</button>
+                <button onclick="nextItem()">Next &#9654;</button>
+            </div>
+        </div>
+    </div>
+    <div class="audit-bottom">
+        <div class="audit-legend">
+            <span><kbd>1</kbd> Pottery</span>
+            <span><kbd>2</kbd> Lighting</span>
+            <span><kbd>3</kbd> Statues</span>
+            <span><kbd>S</kbd> Skip</span>
+            <span><kbd>&larr;</kbd> Prev</span>
+            <span><kbd>&rarr;</kbd> Next</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== BOTTOM BAR ===== -->
+<div class="bottom-bar">
+    <div class="left">
+        <span id="bottomCount">0 items</span>
+        <button class="btn btn-secondary" onclick="startAudit()">Audit Mode</button>
+        <button class="btn btn-secondary" onclick="startAuditUncat()">Audit Uncategorized</button>
+        <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="exportCatalog()">Export catalog-data.js</button>
+    </div>
+</div>
+
+<!-- ===== DUPLICATE OVERLAY ===== -->
+<div class="dup-overlay" id="dupOverlay">
+    <h3>Possible Duplicate Detected</h3>
+    <div class="dup-compare">
+        <div class="dup-box">
+            <img id="dupExisting" src="" alt="">
+            <div id="dupExistingMeta"></div>
+        </div>
+        <div class="dup-box">
+            <img id="dupNew" src="" alt="">
+            <div>New Upload</div>
+        </div>
+    </div>
+    <div class="dup-actions">
+        <button class="btn btn-secondary" onclick="skipDuplicate()">Skip (duplicate)</button>
+        <button class="btn btn-primary" onclick="addDuplicateAnyway()">Add anyway</button>
+    </div>
+</div>
+
+<!-- ===== CONFIRM MODAL ===== -->
+<div class="modal-backdrop" id="confirmModal">
+    <div class="modal">
+        <h3 id="confirmTitle">Confirm</h3>
+        <p id="confirmBody">Are you sure?</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+            <button class="btn btn-primary" id="confirmBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== STATE =====
+    const STORAGE_KEY = 'sewhouse_audit_draft';
+    let items = [];
+    let auditIndex = 0;
+    let auditQueue = []; // indices of items being audited
+    let filter = 'all';
+    let pendingUpload = null;
+
+    // ===== DOM =====
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const importProgress = document.getElementById('importProgress');
+    const importBar = document.getElementById('importBar');
+    const importLabel = document.getElementById('importLabel');
+    const importCount = document.getElementById('importCount');
+    const thumbGrid = document.getElementById('thumbGrid');
+    const statsRow = document.getElementById('statsRow');
+    const filterBar = document.getElementById('filterBar');
+    const auditScreen = document.getElementById('auditScreen');
+    const auditImg = document.getElementById('auditImg');
+    const auditBadge = document.getElementById('auditBadge');
+    const dupOverlay = document.getElementById('dupOverlay');
+    const dupExisting = document.getElementById('dupExisting');
+    const dupNew = document.getElementById('dupNew');
+    const dupExistingMeta = document.getElementById('dupExistingMeta');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // ===== DROP ZONE =====
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (files.length) processFiles(files);
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) processFiles(Array.from(fileInput.files));
+    });
+
+    // ===== FILE PROCESSING =====
+    async function processFiles(files) {
+        importProgress.classList.add('active');
+        let done = 0;
+        const total = files.length;
+        importCount.textContent = `0 / ${total}`;
+
+        for (const file of files) {
+            importLabel.textContent = `Importing: ${file.name}`;
+            try {
+                const dataUrl = await readFileAsDataURL(file);
+                const img = await loadImage(dataUrl);
+                const cropped = cropToSquare(img);
+                const hash = await computeImageHash(img);
+
+                // Check for duplicates
+                const duplicate = findDuplicate(hash);
+                if (duplicate) {
+                    const proceed = await showDuplicateDialog(duplicate, cropped);
+                    if (!proceed) {
+                        done++;
+                        updateProgress(done, total);
+                        continue;
+                    }
+                }
+
+                const id = Date.now() + Math.random().toString(36).substr(2, 9);
+                const itemNum = generateUniqueNumber();
+                items.push({
+                    id, itemNum,
+                    image: cropped,
+                    hash: hash,
+                    description: '',
+                    price: '',
+                    category: '',
+                    style: '',
+                    filename: file.name
+                });
+            } catch (err) {
+                console.error('Failed to import', file.name, err);
+            }
+            done++;
+            updateProgress(done, total);
+        }
+
+        importProgress.classList.remove('active');
+        refreshUI();
+        showStatus(`Imported ${items.length} item${items.length!==1?'s':''}`);
+        saveDraft();
+    }
+
+    function updateProgress(done, total) {
+        importCount.textContent = `${done} / ${total}`;
+        importBar.style.width = `${(done/total)*100}%`;
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
+    // ===== CROP & HASH =====
+    function cropToSquare(img) {
+        const size = Math.min(img.width, img.height);
+        const sx = (img.width - size) / 2;
+        const sy = (img.height - size) / 2;
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 800;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 800, 800);
+        return canvas.toDataURL('image/jpeg', 0.92);
+    }
+
+    function computeImageHash(img) {
+        return new Promise(resolve => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 8; canvas.height = 8;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 8, 8);
+            const data = ctx.getImageData(0, 0, 8, 8).data;
+            let sum = 0;
+            const gray = [];
+            for (let i = 0; i < data.length; i += 4) {
+                const g = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+                gray.push(g);
+                sum += g;
+            }
+            const avg = sum / 64;
+            let hash = '';
+            for (let i = 0; i < 64; i++) hash += gray[i] >= avg ? '1' : '0';
+            resolve(hash);
+        });
+    }
+
+    function hammingDistance(a, b) {
+        let dist = 0;
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) dist++;
+        return dist;
+    }
+
+    function findDuplicate(hash) {
+        const THRESHOLD = 5;
+        for (const item of items) {
+            if (!item.hash) continue;
+            const dist = hammingDistance(hash, item.hash);
+            if (dist <= THRESHOLD) return { item, distance: dist };
+        }
+        return null;
+    }
+
+    function showDuplicateDialog(duplicate, newImageDataUrl) {
+        return new Promise(resolve => {
+            pendingUpload = { resolve };
+            dupExisting.src = duplicate.item.image;
+            dupNew.src = newImageDataUrl;
+            dupExistingMeta.textContent = `Item No. ${duplicate.item.itemNum}${duplicate.item.category?' — '+duplicate.item.category:''}`;
+            dupOverlay.classList.add('show');
+        });
+    }
+
+    window.skipDuplicate = function() {
+        dupOverlay.classList.remove('show');
+        if (pendingUpload) { pendingUpload.resolve(false); pendingUpload = null; }
+    };
+    window.addDuplicateAnyway = function() {
+        dupOverlay.classList.remove('show');
+        if (pendingUpload) { pendingUpload.resolve(true); pendingUpload = null; }
+    };
+
+    // ===== UNIQUE NUMBER =====
+    function generateUniqueNumber() {
+        const existing = items.map(i => i.itemNum);
+        let num;
+        do { num = Math.floor(Math.random() * 9000) + 1000; }
+        while (existing.includes(num));
+        return num;
+    }
+
+    // ===== UI REFRESH =====
+    function refreshUI() {
+        updateStats();
+        renderGrid();
+        document.getElementById('bottomCount').textContent = `${items.length} item${items.length!==1?'s':''}`;
+        statsRow.style.display = items.length ? 'flex' : 'none';
+        filterBar.style.display = items.length ? 'flex' : 'none';
+    }
+
+    function updateStats() {
+        const total = items.length;
+        const pottery = items.filter(i => i.category === 'Pottery').length;
+        const lighting = items.filter(i => i.category === 'Lighting').length;
+        const statues = items.filter(i => i.category === 'Statues').length;
+        const skipped = items.filter(i => i.category === 'Skipped').length;
+        const uncat = items.filter(i => !i.category).length;
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statPottery').textContent = pottery;
+        document.getElementById('statLighting').textContent = lighting;
+        document.getElementById('statStatues').textContent = statues;
+        document.getElementById('statSkipped').textContent = skipped;
+        document.getElementById('statUncat').textContent = uncat;
+    }
+
+    function renderGrid() {
+        thumbGrid.innerHTML = '';
+        const filtered = filter === 'all' ? items : filter === '' ? items.filter(i => !i.category) : items.filter(i => i.category === filter);
+        if (!filtered.length) {
+            thumbGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">No items in this view.</div>';
+            return;
+        }
+        filtered.forEach((item, idx) => {
+            const realIndex = items.indexOf(item);
+            const card = document.createElement('div');
+            card.className = 'thumb-card';
+            card.dataset.index = realIndex;
+            const catBadge = item.category ? `<span class="badge badge-${item.category.toLowerCase().replace(/s$/,'')}">${item.category}</span>` : '<span class="badge badge-none">Uncategorized</span>';
+            card.innerHTML = `
+                <img src="${item.image}" alt="Item ${item.itemNum}">
+                <div class="thumb-info">
+                    <div class="thumb-num">No. ${item.itemNum}</div>
+                    <div class="thumb-cat">${catBadge}</div>
+                </div>
+                <div class="thumb-status">${catBadge}</div>
+            `;
+            card.addEventListener('click', () => {
+                auditQueue = filtered.map(i => items.indexOf(i));
+                auditIndex = auditQueue.indexOf(realIndex);
+                openAudit();
+            });
+            thumbGrid.appendChild(card);
+        });
+    }
+
+    function filterGrid(cat) {
+        filter = cat;
+        renderGrid();
+    }
+
+    // ===== AUDIT MODE =====
+    function startAudit() {
+        auditQueue = items.map((_, i) => i);
+        auditIndex = 0;
+        openAudit();
+    }
+
+    function startAuditUncat() {
+        auditQueue = items.map((item, i) => (!item.category || item.category === 'Skipped') ? i : -1).filter(i => i !== -1);
+        if (!auditQueue.length) { showStatus('All items are categorized!'); return; }
+        auditIndex = 0;
+        openAudit();
+    }
+
+    function openAudit() {
+        if (!auditQueue.length) return;
+        auditScreen.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        showAuditItem();
+    }
+
+    function closeAudit() {
+        auditScreen.classList.remove('active');
+        document.body.style.overflow = '';
+        refreshUI();
+        saveDraft();
+    }
+
+    function showAuditItem() {
+        const idx = auditQueue[auditIndex];
+        const item = items[idx];
+        document.getElementById('auditPos').textContent = auditIndex + 1;
+        document.getElementById('auditTotal').textContent = auditQueue.length;
+        auditImg.src = item.image;
+        updateAuditBadge(item.category);
+    }
+
+    function updateAuditBadge(cat) {
+        if (!cat) {
+            auditBadge.textContent = 'Uncategorized';
+            auditBadge.style.background = '#888';
+        } else if (cat === 'Skipped') {
+            auditBadge.textContent = 'Skipped';
+            auditBadge.style.background = '#555';
+        } else {
+            auditBadge.textContent = cat;
+            auditBadge.style.background = getComputedStyle(document.documentElement).getPropertyValue(`--${cat.toLowerCase().replace(/s$/,'')}`).trim();
+        }
+    }
+
+    window.assignCategory = function(cat) {
+        const idx = auditQueue[auditIndex];
+        items[idx].category = cat;
+        updateAuditBadge(cat);
+        saveDraft();
+        // Auto-advance
+        if (auditIndex < auditQueue.length - 1) {
+            auditIndex++;
+            showAuditItem();
+        } else {
+            showStatus('Audit complete!');
+            closeAudit();
+        }
+    };
+
+    window.nextItem = function() {
+        if (auditIndex < auditQueue.length - 1) {
+            auditIndex++;
+            showAuditItem();
+        }
+    };
+
+    window.prevItem = function() {
+        if (auditIndex > 0) {
+            auditIndex--;
+            showAuditItem();
+        }
+    };
+
+    // ===== KEYBOARD =====
+    document.addEventListener('keydown', e => {
+        if (!auditScreen.classList.contains('active')) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        switch (e.key) {
+            case '1': assignCategory('Pottery'); break;
+            case '2': assignCategory('Lighting'); break;
+            case '3': assignCategory('Statues'); break;
+            case 's': case 'S': assignCategory('Skipped'); break;
+            case 'ArrowRight': nextItem(); break;
+            case 'ArrowLeft': prevItem(); break;
+            case 'Escape': closeAudit(); break;
+        }
+    });
+
+    // ===== EXPORT =====
+    window.exportCatalog = function() {
+        const validItems = items.filter(i => i.category && i.category !== 'Skipped');
+        if (!validItems.length) { alert('No categorized items to export. Categorize some items first.'); return; }
+
+        const data = {
+            header: {
+                title: 'Sew House',
+                phone: '213-308-0288',
+                email: 'bridie@sewhousela.com',
+                logo: 'SewHouseLA_Logo.png'
+            },
+            itemsPerPage: 12,
+            showPrices: false,
+            items: validItems.map(i => {
+                const { hash, filename, ...rest } = i;
+                return rest;
+            })
+        };
+
+        const jsContent = `const CATALOG_DATA = ${JSON.stringify(data, null, 2)};`;
+        const blob = new Blob([jsContent], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'catalog-data.js';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showStatus(`Exported ${validItems.length} items to catalog-data.js`);
+    };
+
+    // ===== SAVE / LOAD DRAFT =====
+    window.saveDraft = function() {
+        const data = { items };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        showStatus('Draft saved');
+    };
+
+    function loadDraft() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (data.items) {
+                items = data.items;
+                refreshUI();
+                showStatus('Draft loaded');
+            }
+        } catch (e) {}
+    }
+
+    window.clearAll = function() {
+        showConfirm('Clear All Items?', 'Remove all imported items? This cannot be undone.', () => {
+            items = [];
+            localStorage.removeItem(STORAGE_KEY);
+            refreshUI();
+            showStatus('All items cleared');
+        });
+    };
+
+    // ===== CONFIRM MODAL =====
+    let confirmCallback = null;
+    function showConfirm(title, body, callback) {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmBody').textContent = body;
+        confirmCallback = callback;
+        document.getElementById('confirmModal').classList.add('show');
+    }
+    window.closeConfirm = function() {
+        document.getElementById('confirmModal').classList.remove('show');
+        confirmCallback = null;
+    };
+    document.getElementById('confirmBtn').addEventListener('click', () => {
+        if (confirmCallback) confirmCallback();
+        closeConfirm();
+    });
+
+    function showStatus(msg) {
+        statusMsg.textContent = msg;
+        setTimeout(() => statusMsg.textContent = '', 3000);
+    }
+
+    // ===== INIT =====
+    loadDraft();
+</script>
+</body>
+</html>
