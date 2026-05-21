@@ -1,0 +1,14 @@
+[Unit]
+Description=Sew House LA Pottery Catalog API
+After=network.target ollama.service
+
+[Service]
+User=aaron
+WorkingDirectory=/opt/pottery-api
+ExecStart=/usr/bin/python3 /opt/pottery-api/server.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

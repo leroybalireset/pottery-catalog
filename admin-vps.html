@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sew House LA — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #2a2a2a; }
+  header { background: #2a2a2a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 1.2rem; font-weight: 600; }
+  header a { color: #ccc; font-size: 0.85rem; text-decoration: none; margin-left: auto; }
+  header a:hover { color: #fff; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed #ccc; border-radius: 12px; padding: 40px;
+    text-align: center; background: #fff; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s; margin-bottom: 24px;
+  }
+  .upload-zone.drag-over { border-color: #6b4c3b; background: #fdf6f0; }
+  .upload-zone input { display: none; }
+  .upload-zone p { color: #888; margin-top: 8px; font-size: 0.9rem; }
+  .upload-zone .icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+  /* Category selector in upload */
+  .upload-options { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .upload-options label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer; }
+  .upload-options input[type=radio] { accent-color: #6b4c3b; }
+
+  /* Upload progress */
+  .upload-queue { margin-bottom: 24px; display: none; }
+  .upload-item { background: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
+  .upload-item .status { margin-left: auto; font-weight: 600; }
+  .upload-item.done .status { color: #2e7d32; }
+  .upload-item.error .status { color: #c62828; }
+  .upload-item.pending .status { color: #888; }
+
+  /* Stats bar */
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat { background: #fff; border-radius: 8px; padding: 12px 20px; flex: 1; min-width: 120px; text-align: center; }
+  .stat .num { font-size: 2rem; font-weight: 700; color: #6b4c3b; }
+  .stat .label { font-size: 0.8rem; color: #888; margin-top: 2px; }
+
+  /* Filters */
+  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 16px; border: 1px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+  .filter-btn.active { background: #6b4c3b; color: #fff; border-color: #6b4c3b; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .card-body { padding: 10px 12px; }
+  .card-num { font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+  .card-desc { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
+  .card-actions { display: flex; gap: 6px; }
+  .btn { padding: 4px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 500; }
+  .btn-edit { background: #eee; color: #333; }
+  .btn-edit:hover { background: #ddd; }
+  .btn-del { background: #fdecea; color: #c62828; }
+  .btn-del:hover { background: #ffcdd2; }
+  .card-cat { font-size: 0.72rem; color: #6b4c3b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+
+  /* Edit modal */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 28px; width: 100%; max-width: 440px; }
+  .modal h2 { font-size: 1.1rem; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.82rem; color: #666; margin-bottom: 4px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .btn-primary { background: #6b4c3b; color: #fff; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; }
+  .btn-primary:hover { background: #5a3d2e; }
+  .btn-cancel { background: #eee; color: #333; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; }
+
+  .empty { text-align: center; color: #aaa; padding: 60px 0; font-size: 1rem; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #2e7d32; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; z-index: 200; display: none; }
+  .toast.error { background: #c62828; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sew House LA — Admin</h1>
+  <a href="/catalog.html" target="_blank">View Public Catalog →</a>
+</header>
+
+<div class="container">
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="icon">📷</div>
+    <strong>Drop photos here or click to browse</strong>
+    <p>Supports JPG, PNG, WEBP · AI will auto-categorize if not set</p>
+    <div class="upload-options">
+      <label><input type="radio" name="uploadCat" value="auto" checked> Auto (AI)</label>
+      <label><input type="radio" name="uploadCat" value="Pottery"> Pottery</label>
+      <label><input type="radio" name="uploadCat" value="Lighting"> Lighting</label>
+      <label><input type="radio" name="uploadCat" value="Statues"> Statues</label>
+    </div>
+  </div>
+
+  <!-- Upload Queue -->
+  <div class="upload-queue" id="uploadQueue"></div>
+
+  <!-- Stats -->
+  <div class="stats" id="stats"></div>
+
+  <!-- Filters -->
+  <div class="filters" id="filters"></div>
+
+  <!-- Grid -->
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No items yet. Upload some photos above.</div>
+
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <h2>Edit Item</h2>
+    <div class="field"><label>Description</label><textarea id="editDesc" rows="2"></textarea></div>
+    <div class="field"><label>Category</label>
+      <select id="editCat">
+        <option>Pottery</option><option>Lighting</option><option>Statues</option>
+      </select>
+    </div>
+    <div class="field"><label>Price (internal only)</label><input type="text" id="editPrice" placeholder="e.g. 120"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="btn-primary" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api';
+let catalog = { items: [] };
+let activeFilter = 'All';
+let editingId = null;
+
+async function loadCatalog() {
+  try {
+    const res = await fetch(`${API}/catalog`);
+    catalog = await res.json();
+    renderStats();
+    renderFilters();
+    renderGrid();
+  } catch(e) {
+    showToast('Failed to load catalog', true);
+  }
+}
+
+function renderStats() {
+  const items = catalog.items || [];
+  const cats = {};
+  items.forEach(i => { cats[i.category] = (cats[i.category] || 0) + 1; });
+  let html = `<div class="stat"><div class="num">${items.length}</div><div class="label">Total Items</div></div>`;
+  ['Pottery','Lighting','Statues'].forEach(c => {
+    html += `<div class="stat"><div class="num">${cats[c]||0}</div><div class="label">${c}</div></div>`;
+  });
+  document.getElementById('stats').innerHTML = html;
+}
+
+function renderFilters() {
+  const cats = ['All','Pottery','Lighting','Statues'];
+  document.getElementById('filters').innerHTML = cats.map(c =>
+    `<button class="filter-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c}</button>`
+  ).join('');
+}
+
+function setFilter(cat) {
+  activeFilter = cat;
+  renderFilters();
+  renderGrid();
+}
+
+function renderGrid() {
+  const items = (catalog.items || []).filter(i => activeFilter === 'All' || i.category === activeFilter);
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  if (!items.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = items.map(item => `
+    <div class="card" id="card-${item.id}">
+      <img src="/${item.image}?t=${Date.now()}" alt="No. ${item.itemNum}" loading="lazy">
+      <div class="card-body">
+        <div class="card-cat">${item.category}</div>
+        <div class="card-num">No. ${item.itemNum}</div>
+        <div class="card-desc">${item.description || '—'}</div>
+        <div class="card-actions">
+          <button class="btn btn-edit" onclick="openEdit('${item.id}')">Edit</button>
+          <button class="btn btn-del" onclick="deleteItem('${item.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Upload
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const uploadQueue = document.getElementById('uploadQueue');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+function getSelectedCat() {
+  return document.querySelector('input[name=uploadCat]:checked').value;
+}
+
+async function handleFiles(files) {
+  if (!files.length) return;
+  uploadQueue.style.display = 'block';
+
+  for (const file of files) {
+    const row = document.createElement('div');
+    row.className = 'upload-item pending';
+    row.innerHTML = `<span>${file.name}</span><span class="status">Uploading...</span>`;
+    uploadQueue.prepend(row);
+
+    const form = new FormData();
+    form.append('image', file);
+    form.append('category', getSelectedCat());
+
+    try {
+      const res = await fetch(`${API}/upload`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (data.success) {
+        row.className = 'upload-item done';
+        row.querySelector('.status').textContent = `✓ ${data.category} — No. ${data.item.itemNum}`;
+        catalog.items.push(data.item);
+        renderStats();
+        renderFilters();
+        renderGrid();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch(e) {
+      row.className = 'upload-item error';
+      row.querySelector('.status').textContent = `✗ ${e.message}`;
+    }
+  }
+  fileInput.value = '';
+}
+
+// Edit
+function openEdit(id) {
+  const item = catalog.items.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  document.getElementById('editDesc').value = item.description || '';
+  document.getElementById('editCat').value = item.category || 'Pottery';
+  document.getElementById('editPrice').value = item.price || '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEdit() {
+  editingId = null;
+  document.getElementById('editModal').classList.remove('open');
+}
+
+async function saveEdit() {
+  if (!editingId) return;
+  const body = {
+    description: document.getElementById('editDesc').value,
+    category: document.getElementById('editCat').value,
+    price: document.getElementById('editPrice').value,
+  };
+  try {
+    const res = await fetch(`${API}/item/${editingId}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.success) {
+      const idx = catalog.items.findIndex(i => i.id === editingId);
+      if (idx !== -1) catalog.items[idx] = data.item;
+      renderGrid();
+      renderStats();
+      closeEdit();
+      showToast('Saved');
+    }
+  } catch(e) { showToast('Save failed', true); }
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  try {
+    const res = await fetch(`${API}/item/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      catalog.items = catalog.items.filter(i => i.id !== id);
+      renderStats(); renderFilters(); renderGrid();
+      showToast('Deleted');
+    }
+  } catch(e) { showToast('Delete failed', true); }
+}
+
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// Close modal on backdrop click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
+
+loadCatalog();
+</script>
+</body>
+</html>
