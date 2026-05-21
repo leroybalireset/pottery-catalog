@@ -307,6 +307,7 @@ header a:hover { color: #fff; }
 
 <script>
 const API = '/api';
+const FETCH_OPTS = { credentials: 'include' };
 let catalog = { items: [] };
 let activeFilter = 'All';
 let searchQuery = '';
@@ -329,7 +330,7 @@ function switchMode(mode) {
 // ===== CATALOG =====
 async function loadCatalog() {
   try {
-    const res = await fetch(`${API}/catalog`);
+    const res = await fetch(`${API}/catalog`, FETCH_OPTS);
     catalog = await res.json();
     renderStats();
     renderGrid();
@@ -417,7 +418,7 @@ async function bulkSetCategory(category) {
   let done = 0;
   for (const id of ids) {
     try {
-      const res = await fetch(`${API}/item/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({category}) });
+      const res = await fetch(`${API}/item/${id}`, { ...FETCH_OPTS, method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({category}) });
       const data = await res.json();
       if (data.success) {
         const idx = catalog.items.findIndex(i=>i.id===id);
@@ -439,7 +440,7 @@ async function bulkDelete() {
   let done = 0;
   for (const id of ids) {
     try {
-      const res = await fetch(`${API}/item/${id}`, { method:'DELETE' });
+      const res = await fetch(`${API}/item/${id}`, { ...FETCH_OPTS, method:'DELETE' });
       const data = await res.json();
       if (data.success) { catalog.items = catalog.items.filter(i=>i.id!==id); done++; }
     } catch(e) {}
@@ -503,7 +504,7 @@ async function handleManualFiles(files) {
     form.append('category', manualCategory);
 
     try {
-      const res = await fetch(`${API}/upload`, { method:'POST', body:form });
+      const res = await fetch(`${API}/upload`, { ...FETCH_OPTS, method:'POST', body:form });
       const data = await res.json();
       if (data.success) {
         row.querySelector('.q-status').className = 'q-status done';
@@ -562,7 +563,7 @@ async function runAIBatch() {
   // Start Ollama
   setAIStatus('loading', 'Starting AI…', 'Starting Ollama vision model (moondream)…');
   try {
-    await fetch(`${API}/ai/start`, { method: 'POST' });
+    await fetch(`${API}/ai/start`, { ...FETCH_OPTS, method: 'POST' });
   } catch(e) {}
   await pollUntilReady();
 
@@ -582,7 +583,7 @@ async function runAIBatch() {
     form.append('category', 'auto');
 
     try {
-      const res = await fetch(`${API}/upload`, { method:'POST', body:form });
+      const res = await fetch(`${API}/upload`, { ...FETCH_OPTS, method:'POST', body:form });
       const data = await res.json();
       if (data.success) {
         item.status = 'done';
@@ -602,7 +603,7 @@ async function runAIBatch() {
 
   // Stop Ollama when batch complete
   setAIStatus('loading', 'Shutting down AI…', 'Stopping Ollama to free memory…');
-  try { await fetch(`${API}/ai/stop`, { method:'POST' }); } catch(e) {}
+  try { await fetch(`${API}/ai/stop`, { ...FETCH_OPTS, method:'POST' }); } catch(e) {}
   await new Promise(r => setTimeout(r, 2000));
   setAIStatus('idle', 'Ollama: Idle', 'AI stopped — memory freed');
 
@@ -616,7 +617,7 @@ async function runAIBatch() {
 
 async function stopOllama() {
   bulkRunning = false;
-  try { await fetch(`${API}/ai/stop`, { method:'POST' }); } catch(e) {}
+  try { await fetch(`${API}/ai/stop`, { ...FETCH_OPTS, method:'POST' }); } catch(e) {}
   setAIStatus('idle', 'Ollama: Idle', 'Stopped manually');
   document.getElementById('btnStopAI').style.display = 'none';
   document.getElementById('btnRunAI').disabled = false;
@@ -625,7 +626,7 @@ async function stopOllama() {
 async function pollUntilReady(attempts=20) {
   for (let i=0; i<attempts; i++) {
     try {
-      const res = await fetch(`${API}/ai/status`);
+      const res = await fetch(`${API}/ai/status`, FETCH_OPTS);
       const data = await res.json();
       if (data.running) return true;
     } catch(e) {}
@@ -675,7 +676,7 @@ async function saveEdit() {
     price: document.getElementById('editPrice').value,
   };
   try {
-    const res = await fetch(`${API}/item/${editingId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const res = await fetch(`${API}/item/${editingId}`, { ...FETCH_OPTS, method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     const data = await res.json();
     if (data.success) {
       const idx = catalog.items.findIndex(i=>i.id===editingId);
@@ -688,7 +689,7 @@ async function saveEdit() {
 async function deleteItem(id) {
   if (!confirm('Delete this item from the catalog?')) return;
   try {
-    const res = await fetch(`${API}/item/${id}`, { method:'DELETE' });
+    const res = await fetch(`${API}/item/${id}`, { ...FETCH_OPTS, method:'DELETE' });
     const data = await res.json();
     if (data.success) {
       catalog.items = catalog.items.filter(i=>i.id!==id);
