@@ -178,7 +178,6 @@ def upload():
     save_catalog(data)
 
     # Fix permissions
-    os.system(f"sudo chown -R www-data:www-data {WWW_ROOT}")
 
     return jsonify({"success": True, "item": item, "category": category})
 
@@ -196,7 +195,6 @@ def update_item(item_id):
             item[field] = body[field]
 
     save_catalog(data)
-    os.system(f"sudo chown -R www-data:www-data {WWW_ROOT}")
     return jsonify({"success": True, "item": item})
 
 
@@ -213,7 +211,6 @@ def delete_item(item_id):
 
     data["items"] = [i for i in data["items"] if i["id"] != item_id]
     save_catalog(data)
-    os.system(f"sudo chown -R www-data:www-data {WWW_ROOT}")
     return jsonify({"success": True})
 
 
