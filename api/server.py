@@ -217,5 +217,23 @@ def delete_item(item_id):
     return jsonify({"success": True})
 
 
+@app.route("/api/ai/status")
+def ai_status():
+    result = os.popen("systemctl is-active ollama").read().strip()
+    return jsonify({"running": result == "active"})
+
+
+@app.route("/api/ai/start", methods=["POST"])
+def ai_start():
+    os.system("sudo systemctl start ollama")
+    return jsonify({"success": True})
+
+
+@app.route("/api/ai/stop", methods=["POST"])
+def ai_stop():
+    os.system("sudo systemctl stop ollama")
+    return jsonify({"success": True})
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001)

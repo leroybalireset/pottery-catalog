@@ -5,82 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sew House LA — Admin</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #2a2a2a; }
-  header { background: #2a2a2a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
-  header h1 { font-size: 1.2rem; font-weight: 600; }
-  header a { color: #ccc; font-size: 0.85rem; text-decoration: none; margin-left: auto; }
-  header a:hover { color: #fff; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #2a2a2a; }
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+header {
+  background: #2a2a2a; color: #fff; padding: 16px 24px;
+  display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50;
+}
+header h1 { font-size: 1.1rem; font-weight: 600; }
+header a { color: #aaa; font-size: 0.82rem; text-decoration: none; margin-left: auto; }
+header a:hover { color: #fff; }
 
-  /* Upload zone */
-  .upload-zone {
-    border: 2px dashed #ccc; border-radius: 12px; padding: 40px;
-    text-align: center; background: #fff; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s; margin-bottom: 24px;
-  }
-  .upload-zone.drag-over { border-color: #6b4c3b; background: #fdf6f0; }
-  .upload-zone input { display: none; }
-  .upload-zone p { color: #888; margin-top: 8px; font-size: 0.9rem; }
-  .upload-zone .icon { font-size: 2.5rem; margin-bottom: 8px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
 
-  /* Category selector in upload */
-  .upload-options { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-  .upload-options label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer; }
-  .upload-options input[type=radio] { accent-color: #6b4c3b; }
+/* Mode tabs */
+.mode-tabs { display: flex; gap: 0; margin-bottom: 24px; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; background: #fff; }
+.mode-tab { flex: 1; padding: 13px 8px; text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: #666; border-right: 1px solid #ddd; transition: all 0.15s; }
+.mode-tab:last-child { border-right: none; }
+.mode-tab.active { background: #6b4c3b; color: #fff; }
+.mode-tab:hover:not(.active) { background: #f9f6f4; color: #2a2a2a; }
+.mode-tab .tab-icon { font-size: 1.2rem; display: block; margin-bottom: 3px; }
 
-  /* Upload progress */
-  .upload-queue { margin-bottom: 24px; display: none; }
-  .upload-item { background: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
-  .upload-item .status { margin-left: auto; font-weight: 600; }
-  .upload-item.done .status { color: #2e7d32; }
-  .upload-item.error .status { color: #c62828; }
-  .upload-item.pending .status { color: #888; }
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
 
-  /* Stats bar */
-  .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-  .stat { background: #fff; border-radius: 8px; padding: 12px 20px; flex: 1; min-width: 120px; text-align: center; }
-  .stat .num { font-size: 2rem; font-weight: 700; color: #6b4c3b; }
-  .stat .label { font-size: 0.8rem; color: #888; margin-top: 2px; }
+/* Manual upload */
+.manual-zone {
+  border: 2px dashed #ccc; border-radius: 12px; padding: 36px;
+  text-align: center; background: #fff; cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
+}
+.manual-zone.drag-over { border-color: #6b4c3b; background: #fdf6f0; }
+.manual-zone input { display: none; }
+.manual-zone .icon { font-size: 2.2rem; margin-bottom: 8px; }
+.manual-zone strong { font-size: 1rem; display: block; margin-bottom: 4px; }
+.manual-zone p { color: #888; font-size: 0.85rem; }
 
-  /* Filters */
-  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-btn { padding: 6px 16px; border: 1px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
-  .filter-btn.active { background: #6b4c3b; color: #fff; border-color: #6b4c3b; }
+.cat-picker { display: flex; gap: 10px; margin-bottom: 16px; }
+.cat-btn { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; font-size: 0.88rem; font-weight: 500; text-align: center; transition: all 0.15s; }
+.cat-btn.active { border-color: #6b4c3b; background: #fdf6f0; color: #6b4c3b; }
 
-  /* Grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-  .card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
-  .card-body { padding: 10px 12px; }
-  .card-num { font-size: 0.75rem; color: #888; margin-bottom: 4px; }
-  .card-desc { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
-  .card-actions { display: flex; gap: 6px; }
-  .btn { padding: 4px 10px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 500; }
-  .btn-edit { background: #eee; color: #333; }
-  .btn-edit:hover { background: #ddd; }
-  .btn-del { background: #fdecea; color: #c62828; }
-  .btn-del:hover { background: #ffcdd2; }
-  .card-cat { font-size: 0.72rem; color: #6b4c3b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+/* Bulk drop */
+.bulk-zone {
+  border: 3px dashed #bbb; border-radius: 16px; padding: 60px 40px;
+  text-align: center; background: #fff; cursor: pointer; transition: all 0.2s; margin-bottom: 20px;
+  position: relative;
+}
+.bulk-zone.drag-over { border-color: #6b4c3b; background: #fdf6f0; transform: scale(1.01); }
+.bulk-zone input { display: none; }
+.bulk-zone .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+.bulk-zone strong { font-size: 1.2rem; display: block; margin-bottom: 6px; }
+.bulk-zone p { color: #888; font-size: 0.9rem; }
 
-  /* Edit modal */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100; display: none; align-items: center; justify-content: center; }
-  .modal-backdrop.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; padding: 28px; width: 100%; max-width: 440px; }
-  .modal h2 { font-size: 1.1rem; margin-bottom: 20px; }
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 0.82rem; color: #666; margin-bottom: 4px; }
-  .field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
-  .field textarea { resize: vertical; min-height: 60px; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
-  .btn-primary { background: #6b4c3b; color: #fff; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; }
-  .btn-primary:hover { background: #5a3d2e; }
-  .btn-cancel { background: #eee; color: #333; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9rem; }
+/* AI status bar */
+.ai-bar {
+  background: #fff; border-radius: 10px; padding: 14px 20px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  border: 1px solid #e8e4e0;
+}
+.ai-indicator { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+.ai-indicator.running { background: #2e7d32; box-shadow: 0 0 0 3px rgba(46,125,50,.2); animation: pulse 1.5s infinite; }
+.ai-indicator.loading { background: #f57c00; animation: pulse 0.8s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.ai-status-text { font-size: 0.88rem; }
+.ai-status-text strong { display: block; font-size: 0.95rem; }
+.ai-actions { margin-left: auto; display: flex; gap: 8px; }
+.btn-sm { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 500; }
+.btn-start { background: #2e7d32; color: #fff; }
+.btn-start:hover { background: #1b5e20; }
+.btn-stop { background: #c62828; color: #fff; }
+.btn-stop:hover { background: #b71c1c; }
+.btn-run-ai { background: #6b4c3b; color: #fff; }
+.btn-run-ai:hover { background: #5a3d2e; }
+.btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .empty { text-align: center; color: #aaa; padding: 60px 0; font-size: 1rem; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: #2e7d32; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; z-index: 200; display: none; }
-  .toast.error { background: #c62828; }
+/* Queue */
+.queue-section { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; display: none; }
+.queue-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-weight: 600; font-size: 0.95rem; }
+.progress-bar-wrap { background: #eee; border-radius: 4px; height: 6px; margin-bottom: 12px; }
+.progress-bar { background: #6b4c3b; height: 6px; border-radius: 4px; transition: width 0.3s; }
+.queue-list { max-height: 240px; overflow-y: auto; }
+.queue-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f0ece8; font-size: 0.85rem; }
+.queue-item:last-child { border-bottom: none; }
+.q-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 4px; background: #eee; flex-shrink: 0; }
+.q-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-status { font-size: 0.78rem; font-weight: 600; flex-shrink: 0; }
+.q-status.pending { color: #999; }
+.q-status.processing { color: #f57c00; }
+.q-status.done { color: #2e7d32; }
+.q-status.error { color: #c62828; }
+
+/* Stats */
+.stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.stat { background: #fff; border-radius: 8px; padding: 12px 18px; flex: 1; min-width: 100px; text-align: center; border: 1px solid #e8e4e0; }
+.stat .num { font-size: 1.8rem; font-weight: 700; color: #6b4c3b; line-height: 1; }
+.stat .label { font-size: 0.75rem; color: #888; margin-top: 4px; }
+
+/* Filters */
+.toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.filter-btn { padding: 5px 14px; border: 1px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; }
+.filter-btn.active { background: #6b4c3b; color: #fff; border-color: #6b4c3b; }
+.search-box { margin-left: auto; padding: 6px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; width: 180px; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07); transition: box-shadow 0.15s; }
+.card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.12); }
+.card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.card-body { padding: 10px 12px; }
+.card-cat { font-size: 0.7rem; color: #6b4c3b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.card-num { font-size: 0.72rem; color: #aaa; margin-bottom: 4px; }
+.card-desc { font-size: 0.83rem; font-weight: 500; margin-bottom: 8px; line-height: 1.3; }
+.card-actions { display: flex; gap: 5px; }
+.btn-edit { padding: 4px 10px; background: #f0ece8; color: #444; border: none; border-radius: 5px; cursor: pointer; font-size: 0.78rem; }
+.btn-edit:hover { background: #e0d8d0; }
+.btn-del { padding: 4px 10px; background: #fdecea; color: #c62828; border: none; border-radius: 5px; cursor: pointer; font-size: 0.78rem; }
+.btn-del:hover { background: #ffcdd2; }
+
+.empty { text-align: center; color: #bbb; padding: 60px 0; font-size: 1rem; }
+
+/* Edit modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal-backdrop.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 28px; width: 100%; max-width: 420px; }
+.modal h2 { font-size: 1.05rem; margin-bottom: 18px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.88rem; font-family: inherit; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.btn-primary { background: #6b4c3b; color: #fff; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.88rem; }
+.btn-primary:hover { background: #5a3d2e; }
+.btn-cancel { background: #eee; color: #333; padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.88rem; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: #2e7d32; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; z-index: 200; display: none; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+.toast.error { background: #c62828; }
 </style>
 </head>
 <body>
@@ -92,32 +150,99 @@
 
 <div class="container">
 
-  <!-- Upload Zone -->
-  <div class="upload-zone" id="uploadZone">
-    <input type="file" id="fileInput" accept="image/*" multiple>
-    <div class="icon">📷</div>
-    <strong>Drop photos here or click to browse</strong>
-    <p>Supports JPG, PNG, WEBP · AI will auto-categorize if not set</p>
-    <div class="upload-options">
-      <label><input type="radio" name="uploadCat" value="auto" checked> Auto (AI)</label>
-      <label><input type="radio" name="uploadCat" value="Pottery"> Pottery</label>
-      <label><input type="radio" name="uploadCat" value="Lighting"> Lighting</label>
-      <label><input type="radio" name="uploadCat" value="Statues"> Statues</label>
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" onclick="switchMode('manual')" id="tab-manual">
+      <span class="tab-icon">📷</span>Manual Upload
+    </div>
+    <div class="mode-tab" onclick="switchMode('bulk')" id="tab-bulk">
+      <span class="tab-icon">📦</span>Bulk AI Sort
+    </div>
+    <div class="mode-tab" onclick="switchMode('catalog')" id="tab-catalog">
+      <span class="tab-icon">🗂</span>Manage Catalog
     </div>
   </div>
 
-  <!-- Upload Queue -->
-  <div class="upload-queue" id="uploadQueue"></div>
+  <!-- ===== MANUAL UPLOAD PANEL ===== -->
+  <div class="panel active" id="panel-manual">
+    <p style="font-size:.85rem;color:#888;margin-bottom:14px;">Pick a category, then upload one or more photos. Images are cropped and added to the live catalog instantly.</p>
 
-  <!-- Stats -->
-  <div class="stats" id="stats"></div>
+    <div class="cat-picker">
+      <div class="cat-btn active" onclick="selectCat(this,'Pottery')">🏺 Pottery</div>
+      <div class="cat-btn" onclick="selectCat(this,'Lighting')">💡 Lighting</div>
+      <div class="cat-btn" onclick="selectCat(this,'Statues')">🗿 Statues</div>
+    </div>
 
-  <!-- Filters -->
-  <div class="filters" id="filters"></div>
+    <div class="manual-zone" id="manualZone">
+      <input type="file" id="manualInput" accept="image/*" multiple>
+      <div class="icon">📁</div>
+      <strong>Drop photos here or click to browse</strong>
+      <p>JPG, PNG, WEBP supported · Multiple files OK</p>
+    </div>
 
-  <!-- Grid -->
-  <div class="grid" id="grid"></div>
-  <div class="empty" id="empty" style="display:none">No items yet. Upload some photos above.</div>
+    <div class="queue-section" id="manualQueue">
+      <div class="queue-header">
+        <span>Upload Progress</span>
+        <span id="manualQueueCount"></span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="manualProgress" style="width:0%"></div></div>
+      <div class="queue-list" id="manualQueueList"></div>
+    </div>
+  </div>
+
+  <!-- ===== BULK AI PANEL ===== -->
+  <div class="panel" id="panel-bulk">
+    <p style="font-size:.85rem;color:#888;margin-bottom:14px;">Drop a large batch of photos. AI will automatically sort each one into Pottery, Lighting, or Statues. Ollama starts automatically and shuts down when the batch is complete.</p>
+
+    <!-- AI Status Bar -->
+    <div class="ai-bar" id="aiBar">
+      <div class="ai-indicator" id="aiIndicator"></div>
+      <div class="ai-status-text">
+        <strong id="aiStatusTitle">Ollama: Idle</strong>
+        <span id="aiStatusSub">AI will start automatically when you run a batch</span>
+      </div>
+      <div class="ai-actions">
+        <button class="btn-sm btn-run-ai" id="btnRunAI" onclick="runAIBatch()" disabled>▶ Run AI on Queue</button>
+        <button class="btn-sm btn-stop" id="btnStopAI" onclick="stopOllama()" style="display:none">■ Stop AI</button>
+      </div>
+    </div>
+
+    <div class="bulk-zone" id="bulkZone">
+      <input type="file" id="bulkInput" accept="image/*" multiple>
+      <span class="icon">📦</span>
+      <strong>Drop your entire batch here</strong>
+      <p>AI will categorize each image · Works with 10–500+ photos</p>
+    </div>
+
+    <div class="queue-section" id="bulkQueue">
+      <div class="queue-header">
+        <span id="bulkQueueTitle">Batch Queue</span>
+        <span id="bulkQueueCount"></span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="bulkProgress" style="width:0%"></div></div>
+      <div class="queue-list" id="bulkQueueList"></div>
+    </div>
+  </div>
+
+  <!-- ===== CATALOG PANEL ===== -->
+  <div class="panel" id="panel-catalog">
+
+    <!-- Stats -->
+    <div class="stats" id="stats"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('Pottery',this)">Pottery</button>
+      <button class="filter-btn" onclick="setFilter('Lighting',this)">Lighting</button>
+      <button class="filter-btn" onclick="setFilter('Statues',this)">Statues</button>
+      <input class="search-box" type="search" placeholder="Search..." oninput="setSearch(this.value)">
+    </div>
+
+    <!-- Grid -->
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">No items yet. Upload photos in Manual or Bulk mode.</div>
+  </div>
 
 </div>
 
@@ -131,7 +256,7 @@
         <option>Pottery</option><option>Lighting</option><option>Statues</option>
       </select>
     </div>
-    <div class="field"><label>Price (internal only)</label><input type="text" id="editPrice" placeholder="e.g. 120"></div>
+    <div class="field"><label>Price (internal only, never shown to customers)</label><input type="text" id="editPrice" placeholder="e.g. 120"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeEdit()">Cancel</button>
       <button class="btn-primary" onclick="saveEdit()">Save</button>
@@ -145,131 +270,284 @@
 const API = '/api';
 let catalog = { items: [] };
 let activeFilter = 'All';
+let searchQuery = '';
 let editingId = null;
+let manualCategory = 'Pottery';
+let bulkQueue = []; // {file, status, rowEl, thumbEl}
+let bulkRunning = false;
 
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + mode).classList.add('active');
+  document.getElementById('tab-' + mode).classList.add('active');
+  if (mode === 'catalog') loadCatalog();
+  if (mode === 'bulk') pollAIStatus();
+}
+
+// ===== CATALOG =====
 async function loadCatalog() {
   try {
     const res = await fetch(`${API}/catalog`);
     catalog = await res.json();
     renderStats();
-    renderFilters();
     renderGrid();
-  } catch(e) {
-    showToast('Failed to load catalog', true);
-  }
+  } catch(e) { showToast('Failed to load catalog', true); }
 }
 
 function renderStats() {
   const items = catalog.items || [];
   const cats = {};
-  items.forEach(i => { cats[i.category] = (cats[i.category] || 0) + 1; });
-  let html = `<div class="stat"><div class="num">${items.length}</div><div class="label">Total Items</div></div>`;
-  ['Pottery','Lighting','Statues'].forEach(c => {
-    html += `<div class="stat"><div class="num">${cats[c]||0}</div><div class="label">${c}</div></div>`;
-  });
-  document.getElementById('stats').innerHTML = html;
-}
-
-function renderFilters() {
-  const cats = ['All','Pottery','Lighting','Statues'];
-  document.getElementById('filters').innerHTML = cats.map(c =>
-    `<button class="filter-btn ${activeFilter===c?'active':''}" onclick="setFilter('${c}')">${c}</button>`
-  ).join('');
-}
-
-function setFilter(cat) {
-  activeFilter = cat;
-  renderFilters();
-  renderGrid();
+  items.forEach(i => { cats[i.category] = (cats[i.category]||0)+1; });
+  document.getElementById('stats').innerHTML =
+    `<div class="stat"><div class="num">${items.length}</div><div class="label">Total</div></div>` +
+    ['Pottery','Lighting','Statues'].map(c =>
+      `<div class="stat"><div class="num">${cats[c]||0}</div><div class="label">${c}</div></div>`
+    ).join('');
 }
 
 function renderGrid() {
-  const items = (catalog.items || []).filter(i => activeFilter === 'All' || i.category === activeFilter);
+  const items = (catalog.items||[]).filter(i => {
+    if (activeFilter !== 'All' && i.category !== activeFilter) return false;
+    if (searchQuery && !i.description.toLowerCase().includes(searchQuery) && !String(i.itemNum).includes(searchQuery)) return false;
+    return true;
+  });
   const grid = document.getElementById('grid');
   const empty = document.getElementById('empty');
-  if (!items.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+  if (!items.length) { grid.innerHTML=''; empty.style.display=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = items.map(item => `
     <div class="card" id="card-${item.id}">
-      <img src="/${item.image}?t=${Date.now()}" alt="No. ${item.itemNum}" loading="lazy">
+      <img src="/${item.image}?v=${Date.now()}" alt="No.${item.itemNum}" loading="lazy">
       <div class="card-body">
         <div class="card-cat">${item.category}</div>
         <div class="card-num">No. ${item.itemNum}</div>
-        <div class="card-desc">${item.description || '—'}</div>
+        <div class="card-desc">${item.description||'—'}</div>
         <div class="card-actions">
-          <button class="btn btn-edit" onclick="openEdit('${item.id}')">Edit</button>
-          <button class="btn btn-del" onclick="deleteItem('${item.id}')">Delete</button>
+          <button class="btn-edit" onclick="openEdit('${item.id}')">Edit</button>
+          <button class="btn-del" onclick="deleteItem('${item.id}')">Delete</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// Upload
-const uploadZone = document.getElementById('uploadZone');
-const fileInput = document.getElementById('fileInput');
-const uploadQueue = document.getElementById('uploadQueue');
-
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
-fileInput.addEventListener('change', () => handleFiles(fileInput.files));
-
-function getSelectedCat() {
-  return document.querySelector('input[name=uploadCat]:checked').value;
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
 }
 
-async function handleFiles(files) {
+function setSearch(val) {
+  searchQuery = val.toLowerCase();
+  renderGrid();
+}
+
+// ===== MANUAL UPLOAD =====
+function selectCat(btn, cat) {
+  manualCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const manualZone = document.getElementById('manualZone');
+const manualInput = document.getElementById('manualInput');
+manualZone.addEventListener('click', () => manualInput.click());
+manualZone.addEventListener('dragover', e => { e.preventDefault(); manualZone.classList.add('drag-over'); });
+manualZone.addEventListener('dragleave', () => manualZone.classList.remove('drag-over'));
+manualZone.addEventListener('drop', e => { e.preventDefault(); manualZone.classList.remove('drag-over'); handleManualFiles(e.dataTransfer.files); });
+manualInput.addEventListener('change', () => handleManualFiles(manualInput.files));
+
+async function handleManualFiles(files) {
   if (!files.length) return;
-  uploadQueue.style.display = 'block';
+  const queueEl = document.getElementById('manualQueue');
+  const listEl = document.getElementById('manualQueueList');
+  const countEl = document.getElementById('manualQueueCount');
+  const progressEl = document.getElementById('manualProgress');
+  queueEl.style.display = 'block';
 
-  for (const file of files) {
+  const arr = Array.from(files);
+  let done = 0;
+
+  for (const file of arr) {
     const row = document.createElement('div');
-    row.className = 'upload-item pending';
-    row.innerHTML = `<span>${file.name}</span><span class="status">Uploading...</span>`;
-    uploadQueue.prepend(row);
+    row.className = 'queue-item';
+    const thumb = document.createElement('img');
+    thumb.className = 'q-thumb';
+    thumb.src = URL.createObjectURL(file);
+    row.innerHTML = `<span class="q-name">${file.name}</span><span class="q-status processing">Uploading…</span>`;
+    row.prepend(thumb);
+    listEl.prepend(row);
 
     const form = new FormData();
     form.append('image', file);
-    form.append('category', getSelectedCat());
+    form.append('category', manualCategory);
 
     try {
-      const res = await fetch(`${API}/upload`, { method: 'POST', body: form });
+      const res = await fetch(`${API}/upload`, { method:'POST', body:form });
       const data = await res.json();
       if (data.success) {
-        row.className = 'upload-item done';
-        row.querySelector('.status').textContent = `✓ ${data.category} — No. ${data.item.itemNum}`;
-        catalog.items.push(data.item);
-        renderStats();
-        renderFilters();
-        renderGrid();
-      } else {
-        throw new Error(data.error);
-      }
+        row.querySelector('.q-status').className = 'q-status done';
+        row.querySelector('.q-status').textContent = `✓ No.${data.item.itemNum}`;
+      } else throw new Error(data.error);
     } catch(e) {
-      row.className = 'upload-item error';
-      row.querySelector('.status').textContent = `✗ ${e.message}`;
+      row.querySelector('.q-status').className = 'q-status error';
+      row.querySelector('.q-status').textContent = `✗ ${e.message}`;
     }
+    done++;
+    progressEl.style.width = `${Math.round(done/arr.length*100)}%`;
+    countEl.textContent = `${done}/${arr.length}`;
   }
-  fileInput.value = '';
+  manualInput.value = '';
+  showToast(`${done} photo${done!==1?'s':''} uploaded`);
 }
 
-// Edit
+// ===== BULK AI =====
+const bulkZone = document.getElementById('bulkZone');
+const bulkInput = document.getElementById('bulkInput');
+bulkZone.addEventListener('click', () => bulkInput.click());
+bulkZone.addEventListener('dragover', e => { e.preventDefault(); bulkZone.classList.add('drag-over'); });
+bulkZone.addEventListener('dragleave', () => bulkZone.classList.remove('drag-over'));
+bulkZone.addEventListener('drop', e => { e.preventDefault(); bulkZone.classList.remove('drag-over'); queueBulkFiles(e.dataTransfer.files); });
+bulkInput.addEventListener('change', () => queueBulkFiles(bulkInput.files));
+
+function queueBulkFiles(files) {
+  if (!files.length) return;
+  const listEl = document.getElementById('bulkQueueList');
+  const queueEl = document.getElementById('bulkQueue');
+  queueEl.style.display = 'block';
+
+  Array.from(files).forEach(file => {
+    const row = document.createElement('div');
+    row.className = 'queue-item';
+    const thumb = document.createElement('img');
+    thumb.className = 'q-thumb';
+    thumb.src = URL.createObjectURL(file);
+    row.innerHTML = `<span class="q-name">${file.name}</span><span class="q-status pending">Queued</span>`;
+    row.prepend(thumb);
+    listEl.appendChild(row);
+    bulkQueue.push({ file, status: 'pending', rowEl: row });
+  });
+
+  document.getElementById('bulkQueueCount').textContent = `${bulkQueue.length} photos`;
+  document.getElementById('btnRunAI').disabled = false;
+  bulkInput.value = '';
+}
+
+async function runAIBatch() {
+  if (bulkRunning || !bulkQueue.length) return;
+  bulkRunning = true;
+  document.getElementById('btnRunAI').disabled = true;
+  document.getElementById('btnStopAI').style.display = '';
+
+  // Start Ollama
+  setAIStatus('loading', 'Starting AI…', 'Starting Ollama vision model (moondream)…');
+  try {
+    await fetch(`${API}/ai/start`, { method: 'POST' });
+  } catch(e) {}
+  await pollUntilReady();
+
+  const pending = bulkQueue.filter(q => q.status === 'pending');
+  let done = 0;
+
+  for (const item of pending) {
+    if (!bulkRunning) break;
+    item.status = 'processing';
+    item.rowEl.querySelector('.q-status').className = 'q-status processing';
+    item.rowEl.querySelector('.q-status').textContent = 'AI sorting…';
+
+    setAIStatus('running', 'AI Running', `Processing ${done+1} of ${pending.length}…`);
+
+    const form = new FormData();
+    form.append('image', item.file);
+    form.append('category', 'auto');
+
+    try {
+      const res = await fetch(`${API}/upload`, { method:'POST', body:form });
+      const data = await res.json();
+      if (data.success) {
+        item.status = 'done';
+        item.rowEl.querySelector('.q-status').className = 'q-status done';
+        item.rowEl.querySelector('.q-status').textContent = `✓ ${data.category}`;
+      } else throw new Error(data.error);
+    } catch(e) {
+      item.status = 'error';
+      item.rowEl.querySelector('.q-status').className = 'q-status error';
+      item.rowEl.querySelector('.q-status').textContent = `✗ ${e.message}`;
+    }
+    done++;
+    const pct = Math.round(done/pending.length*100);
+    document.getElementById('bulkProgress').style.width = pct+'%';
+    document.getElementById('bulkQueueCount').textContent = `${done}/${pending.length} done`;
+  }
+
+  // Stop Ollama when batch complete
+  setAIStatus('loading', 'Shutting down AI…', 'Stopping Ollama to free memory…');
+  try { await fetch(`${API}/ai/stop`, { method:'POST' }); } catch(e) {}
+  await new Promise(r => setTimeout(r, 2000));
+  setAIStatus('idle', 'Ollama: Idle', 'AI stopped — memory freed');
+
+  bulkRunning = false;
+  document.getElementById('btnStopAI').style.display = 'none';
+  document.getElementById('btnRunAI').disabled = false;
+  showToast(`Batch complete — ${done} photos sorted`);
+  // Clear processed items from queue
+  bulkQueue = bulkQueue.filter(q => q.status === 'pending');
+}
+
+async function stopOllama() {
+  bulkRunning = false;
+  try { await fetch(`${API}/ai/stop`, { method:'POST' }); } catch(e) {}
+  setAIStatus('idle', 'Ollama: Idle', 'Stopped manually');
+  document.getElementById('btnStopAI').style.display = 'none';
+  document.getElementById('btnRunAI').disabled = false;
+}
+
+async function pollUntilReady(attempts=20) {
+  for (let i=0; i<attempts; i++) {
+    try {
+      const res = await fetch(`${API}/ai/status`);
+      const data = await res.json();
+      if (data.running) return true;
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  return false;
+}
+
+async function pollAIStatus() {
+  try {
+    const res = await fetch(`${API}/ai/status`);
+    const data = await res.json();
+    if (data.running) {
+      setAIStatus('running', 'Ollama: Running', 'Vision model is active');
+      document.getElementById('btnStopAI').style.display = '';
+    } else {
+      setAIStatus('idle', 'Ollama: Idle', 'AI will start automatically when you run a batch');
+    }
+  } catch(e) {}
+}
+
+function setAIStatus(state, title, sub) {
+  const ind = document.getElementById('aiIndicator');
+  ind.className = 'ai-indicator' + (state==='running'?' running':state==='loading'?' loading':'');
+  document.getElementById('aiStatusTitle').textContent = title;
+  document.getElementById('aiStatusSub').textContent = sub;
+}
+
+// ===== EDIT =====
 function openEdit(id) {
-  const item = catalog.items.find(i => i.id === id);
+  const item = catalog.items.find(i => i.id===id);
   if (!item) return;
   editingId = id;
-  document.getElementById('editDesc').value = item.description || '';
-  document.getElementById('editCat').value = item.category || 'Pottery';
-  document.getElementById('editPrice').value = item.price || '';
+  document.getElementById('editDesc').value = item.description||'';
+  document.getElementById('editCat').value = item.category||'Pottery';
+  document.getElementById('editPrice').value = item.price||'';
   document.getElementById('editModal').classList.add('open');
 }
-
-function closeEdit() {
-  editingId = null;
-  document.getElementById('editModal').classList.remove('open');
-}
+function closeEdit() { editingId=null; document.getElementById('editModal').classList.remove('open'); }
+document.getElementById('editModal').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
 
 async function saveEdit() {
   if (!editingId) return;
@@ -279,28 +557,24 @@ async function saveEdit() {
     price: document.getElementById('editPrice').value,
   };
   try {
-    const res = await fetch(`${API}/item/${editingId}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const res = await fetch(`${API}/item/${editingId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     const data = await res.json();
     if (data.success) {
-      const idx = catalog.items.findIndex(i => i.id === editingId);
-      if (idx !== -1) catalog.items[idx] = data.item;
-      renderGrid();
-      renderStats();
-      closeEdit();
-      showToast('Saved');
+      const idx = catalog.items.findIndex(i=>i.id===editingId);
+      if (idx!==-1) catalog.items[idx]=data.item;
+      renderGrid(); renderStats(); closeEdit(); showToast('Saved');
     }
   } catch(e) { showToast('Save failed', true); }
 }
 
 async function deleteItem(id) {
-  if (!confirm('Delete this item?')) return;
+  if (!confirm('Delete this item from the catalog?')) return;
   try {
-    const res = await fetch(`${API}/item/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API}/item/${id}`, { method:'DELETE' });
     const data = await res.json();
     if (data.success) {
-      catalog.items = catalog.items.filter(i => i.id !== id);
-      renderStats(); renderFilters(); renderGrid();
-      showToast('Deleted');
+      catalog.items = catalog.items.filter(i=>i.id!==id);
+      renderStats(); renderGrid(); showToast('Deleted');
     }
   } catch(e) { showToast('Delete failed', true); }
 }
@@ -308,15 +582,10 @@ async function deleteItem(id) {
 function showToast(msg, isError=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (isError ? ' error' : '');
+  t.className = 'toast'+(isError?' error':'');
   t.style.display = 'block';
-  setTimeout(() => t.style.display = 'none', 3000);
+  setTimeout(()=>t.style.display='none', 3500);
 }
-
-// Close modal on backdrop click
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEdit();
-});
 
 loadCatalog();
 </script>
