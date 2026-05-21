@@ -140,8 +140,12 @@ def upload():
     category = request.form.get("category", "auto")
     description = request.form.get("description", "")
 
+    # Preserve original filename (strip extension, sanitize)
+    original_stem = Path(file.filename).stem if file.filename else "upload"
+    safe_stem = "".join(c if c.isalnum() or c in "-_." else "_" for c in original_stem)[:80]
+
     # Save temp file
-    tmp_path = UPLOAD_TMP / f"upload_{int(time.time())}.jpg"
+    tmp_path = UPLOAD_TMP / f"{safe_stem}_{int(time.time())}.jpg"
     file.save(tmp_path)
 
     # AI categorize if not manually set
@@ -154,9 +158,14 @@ def upload():
     data = load_catalog()
     item_id, item_num = next_item_id(data["items"])
 
-    # Process and save image
-    img_filename = f"{item_id}.jpg"
+    # Use original filename, append item_num suffix if collision exists
+    img_filename = f"{safe_stem}.jpg"
     img_dst = IMAGES_DIR / category / img_filename
+    if img_dst.exists():
+        img_filename = f"{safe_stem}_{item_num}.jpg"
+        img_dst = IMAGES_DIR / category / img_filename
+
+    # Crop, resize to 800x800 and save
     if not process_image(tmp_path, img_dst):
         tmp_path.unlink(missing_ok=True)
         return jsonify({"error": "Image processing failed"}), 500
@@ -168,7 +177,7 @@ def upload():
     item = {
         "id": item_id,
         "itemNum": item_num,
-        "description": description or f"Item {item_num}",
+        "description": description or safe_stem.replace("_", " ").replace("-", " ").title(),
         "price": "",
         "category": category,
         "style": "",
