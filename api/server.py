@@ -6,6 +6,7 @@ Port 5001 (proxied via nginx at /api/)
 """
 
 import base64
+import hashlib
 import json
 import os
 import shutil
@@ -13,10 +14,11 @@ import time
 from pathlib import Path
 
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
 from PIL import Image as PILImage
 
 app = Flask(__name__)
+app.secret_key = "sewhouse-pottery-2026-secret"
 
 # ===== CONFIG =====
 WWW_ROOT = Path("/var/www/pots.sewhousela.com")
@@ -27,6 +29,13 @@ OLLAMA_HOST = "http://localhost:11434"
 CROP_SIZE = 800
 JPEG_QUALITY = 92
 VALID_CATEGORIES = {"Pottery", "Lighting", "Statues"}
+ADMIN_PASSWORD = "marijuana"
+
+
+def require_auth():
+    if not session.get("authed"):
+        return jsonify({"error": "Unauthorized"}), 401
+    return None
 
 AI_PROMPT = """Look at this image carefully. Categorize the item into exactly one of these three categories:
 - Pottery (vases, pots, bowls, urns, ceramic vessels, planters)
@@ -126,6 +135,21 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/api/login", methods=["POST"])
+def login():
+    body = request.get_json()
+    if body and body.get("password") == ADMIN_PASSWORD:
+        session["authed"] = True
+        return jsonify({"success": True})
+    return jsonify({"error": "Wrong password"}), 401
+
+
+@app.route("/api/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return jsonify({"success": True})
+
+
 @app.route("/api/catalog")
 def get_catalog():
     return jsonify(load_catalog())
@@ -133,6 +157,8 @@ def get_catalog():
 
 @app.route("/api/upload", methods=["POST"])
 def upload():
+    err = require_auth()
+    if err: return err
     if "image" not in request.files:
         return jsonify({"error": "No image file"}), 400
 
@@ -193,6 +219,8 @@ def upload():
 
 @app.route("/api/item/<item_id>", methods=["PATCH"])
 def update_item(item_id):
+    err = require_auth()
+    if err: return err
     data = load_catalog()
     item = next((i for i in data["items"] if i["id"] == item_id), None)
     if not item:
@@ -209,6 +237,8 @@ def update_item(item_id):
 
 @app.route("/api/item/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
+    err = require_auth()
+    if err: return err
     data = load_catalog()
     item = next((i for i in data["items"] if i["id"] == item_id), None)
     if not item:

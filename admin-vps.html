@@ -164,9 +164,31 @@ header a:hover { color: #fff; }
 
 .toast { position: fixed; bottom: 24px; right: 24px; background: #2e7d32; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; z-index: 200; display: none; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
 .toast.error { background: #c62828; }
+
+/* Login screen */
+.login-screen { position: fixed; inset: 0; background: #f5f5f0; z-index: 999; display: flex; align-items: center; justify-content: center; }
+.login-box { background: #fff; border-radius: 14px; padding: 40px 36px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,.12); text-align: center; }
+.login-box h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; }
+.login-box p { color: #888; font-size: 0.85rem; margin-bottom: 28px; }
+.login-box input { width: 100%; padding: 11px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 14px; font-family: inherit; letter-spacing: 0.05em; }
+.login-box input:focus { outline: none; border-color: #6b4c3b; }
+.login-box button { width: 100%; padding: 12px; background: #6b4c3b; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.login-box button:hover { background: #5a3d2e; }
+.login-error { color: #c62828; font-size: 0.85rem; margin-top: 10px; display: none; }
 </style>
 </head>
 <body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1>Sew House LA</h1>
+    <p>Admin access</p>
+    <input type="password" id="loginPassword" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError">Incorrect password</div>
+  </div>
+</div>
 
 <header>
   <h1>Sew House LA — Admin</h1>
@@ -307,7 +329,30 @@ header a:hover { color: #fff; }
 
 <script>
 const API = '/api';
-const FETCH_OPTS = {};
+const FETCH_OPTS = { credentials: 'same-origin' };
+
+async function doLogin() {
+  const pw = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    if (res.ok) {
+      document.getElementById('loginScreen').style.display = 'none';
+    } else {
+      errEl.style.display = 'block';
+      document.getElementById('loginPassword').value = '';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error';
+    errEl.style.display = 'block';
+  }
+}
 let catalog = { items: [] };
 let activeFilter = 'All';
 let searchQuery = '';
@@ -331,10 +376,15 @@ function switchMode(mode) {
 async function loadCatalog() {
   try {
     const res = await fetch(`${API}/catalog`, FETCH_OPTS);
-    catalog = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    catalog = JSON.parse(text);
     renderStats();
     renderGrid();
-  } catch(e) { showToast('Failed to load catalog', true); }
+  } catch(e) {
+    console.error('loadCatalog error:', e);
+    showToast('Failed to load catalog: ' + e.message, true);
+  }
 }
 
 function renderStats() {
@@ -706,7 +756,7 @@ function showToast(msg, isError=false) {
   setTimeout(()=>t.style.display='none', 3500);
 }
 
-loadCatalog();
+// loadCatalog is triggered by switchMode('catalog')
 </script>
 </body>
 </html>
