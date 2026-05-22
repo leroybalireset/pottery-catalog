@@ -282,22 +282,56 @@
             box-shadow: 0 0 0 3px rgba(90,74,58,0.25);
         }
         .item-block.selected .item-number { color: var(--selected); font-weight: 700; }
-        .item-block.selected::after {
+        .item-block.selected .item-add-btn {
+            background: var(--selected);
+            color: #fff;
+            border-color: var(--selected);
+        }
+        .item-block.selected .item-add-btn::after { content: '✓'; }
+        .item-block:not(.selected) .item-add-btn::after { content: '+'; }
+
+        /* selected tick in top-right corner */
+        .item-block.selected .item-image-wrapper::after {
             content: '✓';
             position: absolute;
             top: 6px;
             right: 6px;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             background: var(--selected);
             color: #fff;
             border-radius: 50%;
-            font-size: 13px;
-            line-height: 24px;
+            font-size: 12px;
+            line-height: 22px;
             text-align: center;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             pointer-events: none;
         }
+
+        /* + / ✓ button on card */
+        .item-add-btn {
+            position: absolute;
+            bottom: 36px;
+            right: 6px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid #ccc;
+            background: rgba(255,255,255,0.92);
+            color: #888;
+            font-size: 17px;
+            line-height: 26px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 400;
+        }
+        .item-block:hover .item-add-btn,
+        .item-block.selected .item-add-btn { opacity: 1; }
 
         .item-image-wrapper {
             width: 100%;
@@ -328,16 +362,7 @@
             letter-spacing: 2px;
             color: #5a4a3a;
         }
-        .item-hint {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            font-size: 9px;
-            color: #bbb;
-            margin-top: 2px;
-            letter-spacing: 0.5px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .item-block:hover .item-hint { opacity: 1; }
+        .item-hint { display: none; }
 
         .item-block.highlight-search {
             animation: pulseHighlight 1.5s ease;
@@ -842,7 +867,8 @@
             .item-block:hover { transform: none; }
             .item-block { cursor: default; }
             .item-hint { display: none; }
-            .item-block.selected::after { display: none; }
+            .item-block.selected .item-image-wrapper::after { display: none; }
+            .item-add-btn { display: none; }
             .item-block.selected .item-image-wrapper {
                 border-color: transparent;
                 box-shadow: none;
@@ -1044,10 +1070,19 @@
                     <div class="item-image-wrapper">
                         <img src="${item.image}" alt="Item ${item.itemNum}">
                     </div>
+                    <button class="item-add-btn" title="${isSelected ? 'Remove from list' : 'Add to list'}"></button>
                     <div class="item-number">No. ${item.itemNum}</div>
-                    <div class="item-hint">${isSelected ? 'Click to remove' : 'Click to add'}</div>
+                    <div class="item-hint"></div>
                 `;
-                block.addEventListener('click', () => openDetail(item));
+                block.querySelector('.item-image-wrapper').addEventListener('click', () => openDetail(item));
+                block.querySelector('.item-add-btn').addEventListener('click', e => {
+                    e.stopPropagation();
+                    toggleInterest(item);
+                    const isNowSelected = interestList.some(l => l.itemNum === item.itemNum);
+                    block.className = 'item-block' + (isNowSelected ? ' selected' : '');
+                    block.querySelector('.item-add-btn').title = isNowSelected ? 'Remove from list' : 'Add to list';
+                    updateDetailBtn();
+                });
                 grid.appendChild(block);
             });
         }
