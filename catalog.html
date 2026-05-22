@@ -355,7 +355,7 @@
             transition: transform 0.35s ease;
         }
         .item-image-wrapper:hover img {
-            transform: scale(1.12);
+            transform: scale(1.20);
         }
 
         .item-number {
@@ -438,12 +438,17 @@
             justify-content: center;
             min-height: 360px;
             max-height: 90vh;
+            overflow: hidden;
+            cursor: crosshair;
         }
         .detail-image-panel img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            transform-origin: 0 0;
+            transition: transform 0.08s ease-out;
+            pointer-events: none;
         }
 
         .detail-info-panel {
@@ -1295,7 +1300,39 @@
             document.getElementById('detailBackdrop').classList.remove('show');
             document.getElementById('detailModal').classList.remove('open');
             document.body.style.overflow = '';
+            // Reset zoom
+            const img = document.getElementById('detailImg');
+            img.style.transform = '';
         }
+
+        // Mouse-follow zoom inside lightbox
+        const ZOOM_SCALE = 2.2;
+        document.getElementById('detailImg').closest
+        ;(function() {
+            let zooming = false;
+            function getPanel() { return document.querySelector('.detail-image-panel'); }
+            function getImg() { return document.getElementById('detailImg'); }
+
+            document.addEventListener('mousemove', function(e) {
+                const panel = getPanel();
+                if (!panel || !document.getElementById('detailModal').classList.contains('open')) return;
+                const rect = panel.getBoundingClientRect();
+                if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+                    getImg().style.transform = '';
+                    return;
+                }
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                const offsetX = x * (1 - 1 / ZOOM_SCALE) * 100;
+                const offsetY = y * (1 - 1 / ZOOM_SCALE) * 100;
+                getImg().style.transformOrigin = `${offsetX}% ${offsetY}%`;
+                getImg().style.transform = `scale(${ZOOM_SCALE})`;
+            });
+
+            document.addEventListener('mouseleave', function() {
+                getImg().style.transform = '';
+            });
+        })();
 
         function updateDetailBtn() {
             if (!detailItem) return;
