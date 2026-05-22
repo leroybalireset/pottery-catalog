@@ -114,7 +114,7 @@ header a:hover { color: #fff; }
 .card.selected { box-shadow: 0 0 0 3px #6b4c3b; }
 .card.selected .card-check { opacity: 1; }
 .card-check { position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; background: #6b4c3b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; opacity: 0; transition: opacity 0.15s; z-index: 2; }
-.card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #f0ece8; }
 .card-body { padding: 10px 12px; }
 .card-cat { font-size: 0.7rem; color: #6b4c3b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
 .card-num { font-size: 0.72rem; color: #aaa; margin-bottom: 4px; }
@@ -307,7 +307,7 @@ header a:hover { color: #fff; }
 
 <script>
 const API = '/api';
-const FETCH_OPTS = { credentials: 'include' };
+const FETCH_OPTS = {};
 let catalog = { items: [] };
 let activeFilter = 'All';
 let searchQuery = '';
@@ -361,7 +361,7 @@ function renderGrid() {
   grid.innerHTML = items.map(item => `
     <div class="card${selectedIds.has(item.id)?' selected':''}" id="card-${item.id}" onclick="toggleSelect(event,'${item.id}')">
       <div class="card-check">✓</div>
-      <img src="/${item.image}" alt="No.${item.itemNum}" loading="lazy">
+      <img src="/${item.image}" alt="No.${item.itemNum}" loading="eager">
       <div class="card-body">
         <div class="card-cat">${item.category}</div>
         <div class="card-num">No. ${item.itemNum}</div>
