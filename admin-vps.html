@@ -142,6 +142,8 @@ header a:hover { color: #fff; }
 .btn-bulk-lighting:hover { background: #b08830; }
 .btn-bulk-statues { background: #5a7a6b; color: #fff; }
 .btn-bulk-statues:hover { background: #4a6a5b; }
+.btn-bulk-furniture { background: #4a6fa5; color: #fff; }
+.btn-bulk-furniture:hover { background: #3a5f95; }
 .btn-bulk-delete { background: #c62828; color: #fff; margin-left: auto; }
 .btn-bulk-delete:hover { background: #b71c1c; }
 .btn-bulk-cancel { background: #555; color: #fff; }
@@ -218,6 +220,7 @@ header a:hover { color: #fff; }
       <div class="cat-btn active" onclick="selectCat(this,'Pottery')">🏺 Pottery</div>
       <div class="cat-btn" onclick="selectCat(this,'Lighting')">💡 Lighting</div>
       <div class="cat-btn" onclick="selectCat(this,'Statues')">🗿 Statues</div>
+      <div class="cat-btn" onclick="selectCat(this,'Furniture & Accessories')">🪑 Furniture & Accessories</div>
     </div>
 
     <div class="manual-zone" id="manualZone">
@@ -283,6 +286,7 @@ header a:hover { color: #fff; }
       <button class="filter-btn" onclick="setFilter('Pottery',this)">Pottery</button>
       <button class="filter-btn" onclick="setFilter('Lighting',this)">Lighting</button>
       <button class="filter-btn" onclick="setFilter('Statues',this)">Statues</button>
+      <button class="filter-btn" onclick="setFilter('Furniture & Accessories',this)">Furniture & Accessories</button>
       <button class="filter-btn" id="btnSelectAll" onclick="toggleSelectAll()" style="margin-left:8px">Select All</button>
       <input class="search-box" type="search" placeholder="Search..." oninput="setSearch(this.value)">
     </div>
@@ -302,7 +306,7 @@ header a:hover { color: #fff; }
     <div class="field"><label>Description</label><textarea id="editDesc" rows="2"></textarea></div>
     <div class="field"><label>Category</label>
       <select id="editCat">
-        <option>Pottery</option><option>Lighting</option><option>Statues</option>
+        <option>Pottery</option><option>Lighting</option><option>Statues</option><option>Furniture &amp; Accessories</option>
       </select>
     </div>
     <div class="field"><label>Price (internal only, never shown to customers)</label><input type="text" id="editPrice" placeholder="e.g. 120"></div>
@@ -320,6 +324,7 @@ header a:hover { color: #fff; }
   <button class="btn-bulk btn-bulk-pottery" onclick="bulkSetCategory('Pottery')">🏺 Pottery</button>
   <button class="btn-bulk btn-bulk-lighting" onclick="bulkSetCategory('Lighting')">💡 Lighting</button>
   <button class="btn-bulk btn-bulk-statues" onclick="bulkSetCategory('Statues')">🗿 Statues</button>
+  <button class="btn-bulk btn-bulk-furniture" onclick="bulkSetCategory('Furniture & Accessories')">🪑 Furniture</button>
   <div class="divider"></div>
   <button class="btn-bulk btn-bulk-delete" onclick="bulkDelete()">🗑 Delete Selected</button>
   <button class="btn-bulk btn-bulk-cancel" onclick="clearSelection()">✕ Cancel</button>
@@ -328,7 +333,7 @@ header a:hover { color: #fff; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = '/api';
+const API = window.location.origin + '/api';
 const FETCH_OPTS = { credentials: 'same-origin' };
 
 async function doLogin() {
@@ -345,11 +350,12 @@ async function doLogin() {
     if (res.ok) {
       document.getElementById('loginScreen').style.display = 'none';
     } else {
+      errEl.textContent = 'Incorrect password';
       errEl.style.display = 'block';
       document.getElementById('loginPassword').value = '';
     }
   } catch(e) {
-    errEl.textContent = 'Connection error';
+    errEl.textContent = 'Error: ' + e.message;
     errEl.style.display = 'block';
   }
 }
@@ -393,7 +399,7 @@ function renderStats() {
   items.forEach(i => { cats[i.category] = (cats[i.category]||0)+1; });
   document.getElementById('stats').innerHTML =
     `<div class="stat"><div class="num">${items.length}</div><div class="label">Total</div></div>` +
-    ['Pottery','Lighting','Statues'].map(c =>
+    ['Pottery','Lighting','Statues','Furniture & Accessories'].map(c =>
       `<div class="stat"><div class="num">${cats[c]||0}</div><div class="label">${c}</div></div>`
     ).join('');
 }

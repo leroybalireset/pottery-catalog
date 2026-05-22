@@ -28,7 +28,7 @@ UPLOAD_TMP = Path("/tmp/pottery-uploads")
 OLLAMA_HOST = "http://localhost:11434"
 CROP_SIZE = 800
 JPEG_QUALITY = 92
-VALID_CATEGORIES = {"Pottery", "Lighting", "Statues"}
+VALID_CATEGORIES = {"Pottery", "Lighting", "Statues", "Furniture & Accessories"}
 ADMIN_PASSWORD = "marijuana"
 
 
@@ -37,10 +37,11 @@ def require_auth():
         return jsonify({"error": "Unauthorized"}), 401
     return None
 
-AI_PROMPT = """Look at this image carefully. Categorize the item into exactly one of these three categories:
+AI_PROMPT = """Look at this image carefully. Categorize the item into exactly one of these four categories:
 - Pottery (vases, pots, bowls, urns, ceramic vessels, planters)
 - Lighting (lamps, sconces, pendants, chandeliers, light fixtures, candle holders)
 - Statues (sculptures, figurines, totems, abstract forms, decorative figures)
+- Furniture & Accessories (chairs, tables, shelves, mirrors, rugs, cushions, decorative accessories)
 
 Respond with ONLY the category name, nothing else. If truly uncertain, respond with "Uncertain"."""
 
