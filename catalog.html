@@ -1302,35 +1302,39 @@
             document.body.style.overflow = '';
             // Reset zoom
             const img = document.getElementById('detailImg');
-            img.style.transform = '';
+            img.style.transform = 'scale(1)';
+            img.style.transformOrigin = 'center center';
         }
 
         // Mouse-follow zoom inside lightbox
-        const ZOOM_SCALE = 2.2;
-        document.getElementById('detailImg').closest
-        ;(function() {
-            let zooming = false;
+        (function() {
+            const ZOOM = 2.2;
             function getPanel() { return document.querySelector('.detail-image-panel'); }
             function getImg() { return document.getElementById('detailImg'); }
 
             document.addEventListener('mousemove', function(e) {
+                const modal = document.getElementById('detailModal');
+                if (!modal.classList.contains('open')) return;
                 const panel = getPanel();
-                if (!panel || !document.getElementById('detailModal').classList.contains('open')) return;
                 const rect = panel.getBoundingClientRect();
-                if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
-                    getImg().style.transform = '';
+                const img = getImg();
+
+                // Mouse outside the image panel — reset
+                if (e.clientX < rect.left || e.clientX > rect.right ||
+                    e.clientY < rect.top  || e.clientY > rect.bottom) {
+                    img.style.transform = 'scale(1)';
+                    img.style.transformOrigin = 'center center';
                     return;
                 }
-                const x = (e.clientX - rect.left) / rect.width;
-                const y = (e.clientY - rect.top) / rect.height;
-                const offsetX = x * (1 - 1 / ZOOM_SCALE) * 100;
-                const offsetY = y * (1 - 1 / ZOOM_SCALE) * 100;
-                getImg().style.transformOrigin = `${offsetX}% ${offsetY}%`;
-                getImg().style.transform = `scale(${ZOOM_SCALE})`;
-            });
 
-            document.addEventListener('mouseleave', function() {
-                getImg().style.transform = '';
+                // % position of mouse within the panel
+                const pct_x = (e.clientX - rect.left) / rect.width  * 100;
+                const pct_y = (e.clientY - rect.top)  / rect.height * 100;
+
+                // Setting transform-origin to the cursor % and scale > 1
+                // makes the point under the cursor stay fixed
+                img.style.transformOrigin = `${pct_x}% ${pct_y}%`;
+                img.style.transform = `scale(${ZOOM})`;
             });
         })();
 
